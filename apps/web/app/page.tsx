@@ -33,13 +33,15 @@ export default function Home() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      <Sidebar
-        conversations={conversations}
-        activeId={activeId}
-        onSelect={setActiveId}
-        onDelete={deleteConversation}
-        onNew={handleNew}
-      />
+      {conversations.length > 0 && (
+        <Sidebar
+          conversations={conversations}
+          activeId={activeId}
+          onSelect={setActiveId}
+          onDelete={deleteConversation}
+          onNew={handleNew}
+        />
+      )}
       <main className="flex flex-1 min-w-0">
         <ChatView
           key={activeId ?? "new"}

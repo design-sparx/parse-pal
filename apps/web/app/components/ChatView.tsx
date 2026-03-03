@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react"
 import { useChat } from "ai/react"
 import type { Message } from "ai"
-import { UploadIcon, SendIcon } from "lucide-react"
+import { UploadIcon, SendIcon, FileTextIcon, Loader2Icon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -75,8 +75,58 @@ export function ChatView({ conversation, onIngestSuccess, onMessagesChange }: Pr
   const hasExistingMessages = (conversation?.messages.length ?? 0) > 0
   const isReady = ingest.status === "done" || hasExistingMessages
 
+  const fileInput = (
+    <input
+      ref={fileRef}
+      type="file"
+      accept=".pdf"
+      className="hidden"
+      onChange={handleFileUpload}
+    />
+  )
+
+  // Hero: shown when no PDF is loaded and no prior messages
+  if (!isReady) {
+    return (
+      <div className="flex flex-col flex-1 items-center justify-center">
+        {fileInput}
+        {ingest.status === "uploading" ? (
+          <div className="flex flex-col items-center gap-4 text-center">
+            <Loader2Icon className="size-10 text-muted-foreground animate-spin" />
+            <div>
+              <p className="font-semibold text-sm">Processing your document…</p>
+              <p className="text-xs text-muted-foreground mt-1">This may take a moment</p>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center gap-6 text-center max-w-sm px-6">
+            <div className="rounded-2xl bg-muted p-5">
+              <FileTextIcon className="size-10 text-muted-foreground" />
+            </div>
+            <div className="flex flex-col gap-2">
+              <h2 className="font-semibold text-lg">Chat with your PDF</h2>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Upload a document and ask it anything — summaries, facts, comparisons, and more.
+              </p>
+            </div>
+            {ingest.status === "error" && (
+              <p className="text-xs text-destructive">{ingest.message}</p>
+            )}
+            <Button onClick={() => fileRef.current?.click()} className="gap-2 w-full">
+              <UploadIcon className="size-4" />
+              Upload PDF
+            </Button>
+            <p className="text-xs text-muted-foreground">.pdf files only</p>
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // Active chat
   return (
     <div className="flex flex-col flex-1 min-h-0">
+      {fileInput}
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-3 border-b border-border shrink-0">
         <div className="flex items-center gap-3 min-w-0">
@@ -88,32 +138,16 @@ export function ChatView({ conversation, onIngestSuccess, onMessagesChange }: Pr
               {ingest.filename} &middot; {ingest.pages}p &middot; {ingest.chunks} chunks
             </span>
           )}
-          {ingest.status === "uploading" && (
-            <span className="text-xs text-muted-foreground">Processing…</span>
-          )}
-          {ingest.status === "error" && (
-            <span className="text-xs text-destructive">{ingest.message}</span>
-          )}
         </div>
-        <div className="shrink-0">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => fileRef.current?.click()}
-            disabled={ingest.status === "uploading"}
-            className="gap-2"
-          >
-            <UploadIcon />
-            Upload PDF
-          </Button>
-          <input
-            ref={fileRef}
-            type="file"
-            accept=".pdf"
-            className="hidden"
-            onChange={handleFileUpload}
-          />
-        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => fileRef.current?.click()}
+          className="gap-2 shrink-0"
+        >
+          <UploadIcon className="size-4" />
+          Upload PDF
+        </Button>
       </div>
 
       {/* Messages */}
@@ -121,9 +155,7 @@ export function ChatView({ conversation, onIngestSuccess, onMessagesChange }: Pr
         <div className="flex flex-col gap-4 max-w-3xl mx-auto px-6 py-4">
           {messages.length === 0 && (
             <div className="flex items-center justify-center text-muted-foreground text-sm py-24 text-center">
-              {isReady
-                ? "Ask anything about your document"
-                : "Upload a PDF to get started"}
+              Ask anything about your document
             </div>
           )}
           {messages.map((m) => (
@@ -159,13 +191,13 @@ export function ChatView({ conversation, onIngestSuccess, onMessagesChange }: Pr
           <Input
             value={input}
             onChange={handleInputChange}
-            disabled={!isReady || isLoading}
-            placeholder={isReady ? "Ask a question…" : "Upload a PDF first"}
+            disabled={isLoading}
+            placeholder="Ask a question…"
             className="flex-1"
           />
           <Button
             type="submit"
-            disabled={!isReady || isLoading || !input.trim()}
+            disabled={isLoading || !input.trim()}
             size="icon"
           >
             <SendIcon />
