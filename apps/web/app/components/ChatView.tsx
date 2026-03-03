@@ -12,7 +12,6 @@ import {
   ArrowRightIcon,
   PanelRightIcon,
   PanelRightCloseIcon,
-  PanelLeftOpenIcon,
   XIcon,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -39,10 +38,14 @@ type Props = {
   conversation: Conversation | null
   onIngestSuccess: (filename: string, meta: IngestMeta) => void
   onMessagesChange: (messages: Message[]) => void
-  pendingIngest: IngestMeta | null
-  onOnboardingComplete: () => void
-  showSidebarToggle?: boolean
-  onToggleSidebar?: () => void
+}
+
+function formatDate(ts: number): string {
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(new Date(ts))
 }
 
 function formatFileSize(bytes: number): string {
@@ -83,7 +86,7 @@ async function fetchSummary(): Promise<string> {
       if (line.startsWith("0:")) {
         try {
           summary += JSON.parse(line.slice(2))
-        } catch {}
+        } catch { }
       }
     }
   }
@@ -95,14 +98,11 @@ export function ChatView({
   conversation,
   onIngestSuccess,
   onMessagesChange,
-  pendingIngest,
-  onOnboardingComplete,
-  showSidebarToggle,
-  onToggleSidebar,
 }: Props) {
   const hasExistingMessages = (conversation?.messages.length ?? 0) > 0
   const [ingest, setIngest] = useState<IngestState>({ status: "idle" })
   const [isActive, setIsActive] = useState(hasExistingMessages)
+  const [showDetails, setShowDetails] = useState(hasExistingMessages)
   const [showInfo, setShowInfo] = useState(true)
   const fileRef = useRef<HTMLInputElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -141,7 +141,6 @@ export function ChatView({
       setIngest({ status: "summarizing" })
       const summary = await fetchSummary()
 
-      setMessages([])
       onIngestSuccess(file.name, {
         filename: data.filename,
         fileSize,
@@ -159,7 +158,6 @@ export function ChatView({
   function handleStartChatting() {
     setIsActive(true)
     setShowInfo(true)
-    onOnboardingComplete()
   }
 
   const showChat = isActive || hasExistingMessages
@@ -175,23 +173,10 @@ export function ChatView({
     />
   )
 
-  const sidebarToggleBtn = showSidebarToggle && (
-    <Button
-      variant="ghost"
-      size="icon"
-      onClick={onToggleSidebar}
-      title="Open sidebar"
-      className="absolute top-2 left-2"
-    >
-      <PanelLeftOpenIcon className="size-4" />
-    </Button>
-  )
-
   // Upload / summarize in progress
   if (ingest.status === "uploading" || ingest.status === "summarizing") {
     return (
-      <div className="relative flex flex-col flex-1 items-center justify-center">
-        {sidebarToggleBtn}
+      <div className="flex flex-col flex-1 items-center justify-center">
         {fileInput}
         <div className="flex flex-col items-center gap-4 text-center">
           <Loader2Icon className="size-10 text-muted-foreground animate-spin" />
@@ -208,11 +193,10 @@ export function ChatView({
     )
   }
 
-  // Onboarding card: shown after fresh upload, before first message
-  if (pendingIngest && !showChat) {
+  // Onboarding card: new conversation with summary but no messages yet
+  if (!isActive && !hasExistingMessages && conversation?.summary) {
     return (
-      <div className="relative flex flex-col flex-1 items-center justify-center px-6">
-        {sidebarToggleBtn}
+      <div className="flex flex-col flex-1 items-center justify-center px-6">
         {fileInput}
         <div className="flex flex-col gap-5 max-w-md w-full">
           <div className="flex items-start gap-4 p-4 rounded-xl border border-border bg-muted/40">
@@ -220,23 +204,26 @@ export function ChatView({
               <FileTextIcon className="size-5 text-muted-foreground" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="font-medium text-sm truncate">{pendingIngest.filename}</p>
+              <p className="font-medium text-sm truncate">{conversation.docName}</p>
               <p className="text-xs text-muted-foreground mt-0.5">
-                {pendingIngest.fileSize} &middot; {pendingIngest.pages} pages &middot;{" "}
-                {pendingIngest.chunks} chunks
+                {[
+                  conversation.fileSize,
+                  conversation.pages && `${conversation.pages} pages`,
+                  conversation.chunks && `${conversation.chunks} chunks`,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
               </p>
             </div>
             <CheckCircle2Icon className="size-4 text-green-500 shrink-0 mt-0.5" />
           </div>
 
-          {pendingIngest.summary && (
-            <div className="flex flex-col gap-2">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                AI Summary
-              </p>
-              <p className="text-sm leading-relaxed">{pendingIngest.summary}</p>
-            </div>
-          )}
+          <div className="flex flex-col gap-2">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              AI Summary
+            </p>
+            <p className="text-sm leading-relaxed">{conversation.summary}</p>
+          </div>
 
           <Button onClick={handleStartChatting} className="gap-2 w-full">
             Start chatting
@@ -250,8 +237,7 @@ export function ChatView({
   // Empty hero: no PDF loaded, no prior messages
   if (!showChat) {
     return (
-      <div className="relative flex flex-col flex-1 items-center justify-center">
-        {sidebarToggleBtn}
+      <div className="flex flex-col flex-1 items-center justify-center">
         {fileInput}
         <div className="flex flex-col items-center gap-6 text-center max-w-sm px-6">
           <div className="rounded-2xl bg-muted p-5">
@@ -276,6 +262,95 @@ export function ChatView({
     )
   }
 
+  // Conversation details: shown when opening an existing conversation
+  if (showDetails && conversation) {
+    const lastUserMsg = [...conversation.messages].reverse().find((m) => m.role === "user")
+    const lastAssistantMsg = [...conversation.messages].reverse().find((m) => m.role === "assistant")
+    const msgCount = conversation.messages.length
+
+    return (
+      <div className="flex flex-col flex-1 items-center justify-center px-6">
+        {fileInput}
+        <div className="flex flex-col gap-5 max-w-md w-full">
+
+          {/* Document card */}
+          <div className="flex items-start gap-4 p-4 rounded-xl border border-border bg-muted/40">
+            <div className="rounded-lg bg-background p-2.5 border border-border shrink-0">
+              <FileTextIcon className="size-5 text-muted-foreground" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="font-medium text-sm truncate">{conversation.docName}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {[
+                  conversation.fileSize,
+                  conversation.pages && `${conversation.pages} pages`,
+                  conversation.chunks && `${conversation.chunks} chunks`,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </p>
+            </div>
+          </div>
+
+          {/* AI Summary */}
+          {conversation.summary && (
+            <div className="flex flex-col gap-2">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                AI Summary
+              </p>
+              <p className="text-sm leading-relaxed">{conversation.summary}</p>
+            </div>
+          )}
+
+          <Separator />
+
+          {/* Conversation stats */}
+          <div className="flex flex-col gap-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Conversation
+            </p>
+            <div className="flex items-center gap-4 text-xs text-muted-foreground">
+              <span>{msgCount} message{msgCount !== 1 ? "s" : ""}</span>
+              <span>&middot;</span>
+              <span>Started {formatDate(conversation.createdAt)}</span>
+            </div>
+
+            {/* Last exchange preview */}
+            {lastUserMsg && (
+              <div className="flex flex-col gap-2 rounded-lg border border-border p-3 bg-background">
+                <div className="flex flex-col gap-1">
+                  <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                    Last question
+                  </p>
+                  <p className="text-xs line-clamp-2">{lastUserMsg.content}</p>
+                </div>
+                {lastAssistantMsg && (
+                  <>
+                    <Separator />
+                    <div className="flex flex-col gap-1">
+                      <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                        Last answer
+                      </p>
+                      <p className="text-xs text-muted-foreground line-clamp-2">
+                        {lastAssistantMsg.content}
+                      </p>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* CTA */}
+          <Button onClick={() => setShowDetails(false)} className="gap-2 w-full">
+            Continue chatting
+            <ArrowRightIcon className="size-4" />
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
   // Active chat
   return (
     <div className="flex flex-col flex-1 min-h-0">
@@ -284,50 +359,25 @@ export function ChatView({
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-3 border-b border-border shrink-0">
         <div className="flex items-center gap-2 min-w-0">
-          {showSidebarToggle && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onToggleSidebar}
-              title="Open sidebar"
-            >
-              <PanelLeftOpenIcon className="size-4" />
-            </Button>
-          )}
           <h2 className="font-semibold text-sm truncate">
             {conversation ? conversation.title : "New Chat"}
           </h2>
-          {conversation?.docName && (
-            <span className="text-xs text-muted-foreground shrink-0 hidden sm:inline">
-              {conversation.docName}
-            </span>
-          )}
         </div>
-        <div className="flex items-center gap-2 shrink-0">
-          {docSummary && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setShowInfo((v) => !v)}
-              title={showInfo ? "Hide document info" : "Show document info"}
-            >
-              {showInfo ? (
-                <PanelRightCloseIcon className="size-4" />
-              ) : (
-                <PanelRightIcon className="size-4" />
-              )}
-            </Button>
-          )}
+        {docSummary && (
           <Button
-            variant="outline"
-            size="sm"
-            onClick={() => fileRef.current?.click()}
-            className="gap-2"
+            variant="ghost"
+            size="icon"
+            onClick={() => setShowInfo((v) => !v)}
+            title={showInfo ? "Hide document info" : "Show document info"}
+            className="shrink-0"
           >
-            <UploadIcon className="size-4" />
-            Upload PDF
+            {showInfo ? (
+              <PanelRightCloseIcon className="size-4" />
+            ) : (
+              <PanelRightIcon className="size-4" />
+            )}
           </Button>
-        </div>
+        )}
       </div>
 
       {/* Body: chat column + optional info panel */}
@@ -348,11 +398,10 @@ export function ChatView({
                   className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
                 >
                   <div
-                    className={`max-w-[80%] px-4 py-2 rounded-2xl text-sm whitespace-pre-wrap ${
-                      m.role === "user"
+                    className={`max-w-[80%] px-4 py-2 rounded-2xl text-sm whitespace-pre-wrap ${m.role === "user"
                         ? "bg-primary text-primary-foreground rounded-br-sm"
                         : "bg-muted text-foreground rounded-bl-sm"
-                    }`}
+                      }`}
                   >
                     {m.content}
                   </div>

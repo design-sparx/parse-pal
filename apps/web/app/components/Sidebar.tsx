@@ -1,6 +1,6 @@
 "use client"
 
-import { PanelLeftCloseIcon, Trash2Icon, FileTextIcon } from "lucide-react"
+import { PanelLeftCloseIcon, Trash2Icon, FileTextIcon, UploadIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
@@ -14,6 +14,7 @@ type Props = {
   onSelect: (id: string) => void
   onDelete: (id: string) => void
   onToggle: () => void
+  onNewChat: () => void
 }
 
 export function Sidebar({
@@ -22,9 +23,11 @@ export function Sidebar({
   onSelect,
   onDelete,
   onToggle,
+  onNewChat,
 }: Props) {
   return (
     <aside className="flex flex-col w-64 border-r border-border bg-sidebar shrink-0">
+      {/* Header */}
       <div className="flex items-center justify-between px-4 py-3">
         <span className="font-semibold text-sm text-sidebar-foreground">ParsePal</span>
         <Button variant="ghost" size="icon" onClick={onToggle} title="Collapse sidebar">
@@ -34,6 +37,7 @@ export function Sidebar({
 
       <Separator />
 
+      {/* Conversation list */}
       <ScrollArea className="flex-1">
         <div className="py-2 px-2 flex flex-col gap-1">
           {conversations.length === 0 && (
@@ -81,6 +85,18 @@ export function Sidebar({
           ))}
         </div>
       </ScrollArea>
+
+      {/* Upload CTA */}
+      <div className="p-3 shrink-0">
+        <Separator className="mb-3" />
+        <button
+          onClick={onNewChat}
+          className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-xs text-muted-foreground hover:text-foreground hover:bg-sidebar-accent transition-colors border border-dashed border-border"
+        >
+          <UploadIcon className="size-3.5 shrink-0" />
+          <span>Upload a PDF</span>
+        </button>
+      </div>
     </aside>
   )
 }
