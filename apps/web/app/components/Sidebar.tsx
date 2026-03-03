@@ -1,6 +1,6 @@
 "use client"
 
-import { PlusIcon, Trash2Icon, FileTextIcon } from "lucide-react"
+import { PanelLeftCloseIcon, Trash2Icon, FileTextIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
@@ -13,7 +13,7 @@ type Props = {
   activeId: string | null
   onSelect: (id: string) => void
   onDelete: (id: string) => void
-  onNew: () => void
+  onToggle: () => void
 }
 
 export function Sidebar({
@@ -21,14 +21,14 @@ export function Sidebar({
   activeId,
   onSelect,
   onDelete,
-  onNew,
+  onToggle,
 }: Props) {
   return (
     <aside className="flex flex-col w-64 border-r border-border bg-sidebar shrink-0">
       <div className="flex items-center justify-between px-4 py-3">
         <span className="font-semibold text-sm text-sidebar-foreground">ParsePal</span>
-        <Button variant="ghost" size="icon" onClick={onNew} title="New chat">
-          <PlusIcon />
+        <Button variant="ghost" size="icon" onClick={onToggle} title="Collapse sidebar">
+          <PanelLeftCloseIcon className="size-4" />
         </Button>
       </div>
 

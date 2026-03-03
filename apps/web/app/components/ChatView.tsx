@@ -12,6 +12,7 @@ import {
   ArrowRightIcon,
   PanelRightIcon,
   PanelRightCloseIcon,
+  PanelLeftOpenIcon,
   XIcon,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -40,6 +41,8 @@ type Props = {
   onMessagesChange: (messages: Message[]) => void
   pendingIngest: IngestMeta | null
   onOnboardingComplete: () => void
+  showSidebarToggle?: boolean
+  onToggleSidebar?: () => void
 }
 
 function formatFileSize(bytes: number): string {
@@ -94,6 +97,8 @@ export function ChatView({
   onMessagesChange,
   pendingIngest,
   onOnboardingComplete,
+  showSidebarToggle,
+  onToggleSidebar,
 }: Props) {
   const hasExistingMessages = (conversation?.messages.length ?? 0) > 0
   const [ingest, setIngest] = useState<IngestState>({ status: "idle" })
@@ -170,10 +175,23 @@ export function ChatView({
     />
   )
 
+  const sidebarToggleBtn = showSidebarToggle && (
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={onToggleSidebar}
+      title="Open sidebar"
+      className="absolute top-2 left-2"
+    >
+      <PanelLeftOpenIcon className="size-4" />
+    </Button>
+  )
+
   // Upload / summarize in progress
   if (ingest.status === "uploading" || ingest.status === "summarizing") {
     return (
-      <div className="flex flex-col flex-1 items-center justify-center">
+      <div className="relative flex flex-col flex-1 items-center justify-center">
+        {sidebarToggleBtn}
         {fileInput}
         <div className="flex flex-col items-center gap-4 text-center">
           <Loader2Icon className="size-10 text-muted-foreground animate-spin" />
@@ -193,7 +211,8 @@ export function ChatView({
   // Onboarding card: shown after fresh upload, before first message
   if (pendingIngest && !showChat) {
     return (
-      <div className="flex flex-col flex-1 items-center justify-center px-6">
+      <div className="relative flex flex-col flex-1 items-center justify-center px-6">
+        {sidebarToggleBtn}
         {fileInput}
         <div className="flex flex-col gap-5 max-w-md w-full">
           <div className="flex items-start gap-4 p-4 rounded-xl border border-border bg-muted/40">
@@ -231,7 +250,8 @@ export function ChatView({
   // Empty hero: no PDF loaded, no prior messages
   if (!showChat) {
     return (
-      <div className="flex flex-col flex-1 items-center justify-center">
+      <div className="relative flex flex-col flex-1 items-center justify-center">
+        {sidebarToggleBtn}
         {fileInput}
         <div className="flex flex-col items-center gap-6 text-center max-w-sm px-6">
           <div className="rounded-2xl bg-muted p-5">
@@ -263,7 +283,17 @@ export function ChatView({
 
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-3 border-b border-border shrink-0">
-        <div className="flex items-center gap-3 min-w-0">
+        <div className="flex items-center gap-2 min-w-0">
+          {showSidebarToggle && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onToggleSidebar}
+              title="Open sidebar"
+            >
+              <PanelLeftOpenIcon className="size-4" />
+            </Button>
+          )}
           <h2 className="font-semibold text-sm truncate">
             {conversation ? conversation.title : "New Chat"}
           </h2>

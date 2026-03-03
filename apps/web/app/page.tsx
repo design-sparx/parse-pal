@@ -17,6 +17,8 @@ export default function Home() {
     setActiveId,
   } = useConversations()
 
+  const [sidebarOpen, setSidebarOpen] = useState(true)
+
   const [pendingIngest, setPendingIngest] = useState<{
     meta: IngestMeta
     convId: string
@@ -33,10 +35,6 @@ export default function Home() {
     }
   }
 
-  function handleNew() {
-    setActiveId(null)
-  }
-
   function handleOnboardingComplete() {
     setPendingIngest(null)
   }
@@ -46,13 +44,13 @@ export default function Home() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      {conversations.length > 0 && (
+      {conversations.length > 0 && sidebarOpen && (
         <Sidebar
           conversations={conversations}
           activeId={activeId}
           onSelect={setActiveId}
           onDelete={deleteConversation}
-          onNew={handleNew}
+          onToggle={() => setSidebarOpen(false)}
         />
       )}
       <main className="flex flex-1 min-w-0">
@@ -63,6 +61,8 @@ export default function Home() {
           onMessagesChange={handleMessagesChange}
           pendingIngest={relevantPendingIngest}
           onOnboardingComplete={handleOnboardingComplete}
+          showSidebarToggle={conversations.length > 0 && !sidebarOpen}
+          onToggleSidebar={() => setSidebarOpen(true)}
         />
       </main>
     </div>
