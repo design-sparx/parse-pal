@@ -1,8 +1,9 @@
 "use client"
 
+import { useState } from "react"
 import { useConversations } from "@/app/hooks/useConversations"
 import { Sidebar } from "@/app/components/Sidebar"
-import { ChatView } from "@/app/components/ChatView"
+import { ChatView, type IngestMeta } from "@/app/components/ChatView"
 import type { Message } from "ai"
 
 export default function Home() {
@@ -16,8 +17,14 @@ export default function Home() {
     setActiveId,
   } = useConversations()
 
-  function handleIngestSuccess(filename: string) {
-    createConversation(filename)
+  const [pendingIngest, setPendingIngest] = useState<{
+    meta: IngestMeta
+    convId: string
+  } | null>(null)
+
+  function handleIngestSuccess(filename: string, meta: IngestMeta) {
+    const id = createConversation(filename, meta)
+    setPendingIngest({ meta, convId: id })
   }
 
   function handleMessagesChange(messages: Message[]) {
@@ -27,9 +34,15 @@ export default function Home() {
   }
 
   function handleNew() {
-    // Just clear the active selection so ChatView shows empty state
     setActiveId(null)
   }
+
+  function handleOnboardingComplete() {
+    setPendingIngest(null)
+  }
+
+  const relevantPendingIngest =
+    activeId && pendingIngest?.convId === activeId ? pendingIngest.meta : null
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
@@ -48,6 +61,8 @@ export default function Home() {
           conversation={active}
           onIngestSuccess={handleIngestSuccess}
           onMessagesChange={handleMessagesChange}
+          pendingIngest={relevantPendingIngest}
+          onOnboardingComplete={handleOnboardingComplete}
         />
       </main>
     </div>

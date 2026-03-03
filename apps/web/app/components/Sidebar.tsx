@@ -42,11 +42,14 @@ export function Sidebar({
             </p>
           )}
           {conversations.map((conv) => (
-            <button
+            <div
               key={conv.id}
+              role="button"
+              tabIndex={0}
               onClick={() => onSelect(conv.id)}
+              onKeyDown={(e) => e.key === "Enter" && onSelect(conv.id)}
               className={cn(
-                "group w-full text-left rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent",
+                "group w-full text-left rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent cursor-pointer",
                 activeId === conv.id &&
                   "bg-sidebar-accent text-sidebar-accent-foreground"
               )}
@@ -74,7 +77,7 @@ export function Sidebar({
               >
                 {conv.docName}
               </Badge>
-            </button>
+            </div>
           ))}
         </div>
       </ScrollArea>

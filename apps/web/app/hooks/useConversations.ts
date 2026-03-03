@@ -7,6 +7,10 @@ export type Conversation = {
   id: string
   title: string
   docName: string
+  fileSize?: string
+  pages?: number
+  chunks?: number
+  summary?: string
   createdAt: number
   messages: Message[]
 }
@@ -39,23 +43,30 @@ export function useConversations() {
 
   const active = conversations.find((c) => c.id === activeId) ?? null
 
-  const createConversation = useCallback((docName: string): string => {
-    const id = crypto.randomUUID()
-    const conv: Conversation = {
-      id,
-      title: docName,
-      docName,
-      createdAt: Date.now(),
-      messages: [],
-    }
-    setConversations((prev) => {
-      const next = [conv, ...prev]
-      save(next)
-      return next
-    })
-    setActiveId(id)
-    return id
-  }, [])
+  const createConversation = useCallback(
+    (
+      docName: string,
+      meta?: { fileSize: string; pages: number; chunks: number; summary: string }
+    ): string => {
+      const id = crypto.randomUUID()
+      const conv: Conversation = {
+        id,
+        title: docName,
+        docName,
+        ...meta,
+        createdAt: Date.now(),
+        messages: [],
+      }
+      setConversations((prev) => {
+        const next = [conv, ...prev]
+        save(next)
+        return next
+      })
+      setActiveId(id)
+      return id
+    },
+    []
+  )
 
   const saveMessages = useCallback((id: string, messages: Message[]) => {
     setConversations((prev) => {
