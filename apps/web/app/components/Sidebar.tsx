@@ -1,0 +1,83 @@
+"use client"
+
+import { PlusIcon, Trash2Icon, FileTextIcon } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Separator } from "@/components/ui/separator"
+import { Badge } from "@/components/ui/badge"
+import { cn } from "@/lib/utils"
+import type { Conversation } from "@/app/hooks/useConversations"
+
+type Props = {
+  conversations: Conversation[]
+  activeId: string | null
+  onSelect: (id: string) => void
+  onDelete: (id: string) => void
+  onNew: () => void
+}
+
+export function Sidebar({
+  conversations,
+  activeId,
+  onSelect,
+  onDelete,
+  onNew,
+}: Props) {
+  return (
+    <aside className="flex flex-col w-64 border-r border-border bg-sidebar shrink-0">
+      <div className="flex items-center justify-between px-4 py-3">
+        <span className="font-semibold text-sm text-sidebar-foreground">ParsePal</span>
+        <Button variant="ghost" size="icon" onClick={onNew} title="New chat">
+          <PlusIcon />
+        </Button>
+      </div>
+
+      <Separator />
+
+      <ScrollArea className="flex-1">
+        <div className="py-2 px-2 flex flex-col gap-1">
+          {conversations.length === 0 && (
+            <p className="text-xs text-muted-foreground text-center py-6">
+              No conversations yet
+            </p>
+          )}
+          {conversations.map((conv) => (
+            <button
+              key={conv.id}
+              onClick={() => onSelect(conv.id)}
+              className={cn(
+                "group w-full text-left rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent",
+                activeId === conv.id &&
+                  "bg-sidebar-accent text-sidebar-accent-foreground"
+              )}
+            >
+              <div className="flex items-start justify-between gap-1 min-w-0">
+                <div className="flex items-center gap-2 min-w-0">
+                  <FileTextIcon className="size-3.5 shrink-0 text-muted-foreground" />
+                  <span className="truncate text-xs font-medium leading-tight">
+                    {conv.title}
+                  </span>
+                </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onDelete(conv.id)
+                  }}
+                  className="opacity-0 group-hover:opacity-100 shrink-0 text-muted-foreground hover:text-destructive transition-opacity"
+                >
+                  <Trash2Icon className="size-3.5" />
+                </button>
+              </div>
+              <Badge
+                variant="secondary"
+                className="mt-1 text-[10px] max-w-full truncate"
+              >
+                {conv.docName}
+              </Badge>
+            </button>
+          ))}
+        </div>
+      </ScrollArea>
+    </aside>
+  )
+}
