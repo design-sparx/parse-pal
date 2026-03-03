@@ -1,0 +1,21 @@
+{
+  "name": "@parse-pal/cli",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "ingest": "tsx src/ingest.ts",
+    "chat": "tsx src/chat.ts"
+  },
+  "dependencies": {
+    "@langchain/core": "^1.1.29",
+    "@langchain/groq": "^1.1.3",
+    "@parse-pal/rag": "workspace:*",
+    "dotenv": "^17.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^25.3.3",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}

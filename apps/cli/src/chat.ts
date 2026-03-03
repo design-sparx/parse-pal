@@ -1,11 +1,9 @@
 import "dotenv/config";
 import { ChatGroq } from "@langchain/groq";
-import { Chroma } from "@langchain/community/vectorstores/chroma";
-import { HuggingFaceTransformersEmbeddings } from "@langchain/community/embeddings/huggingface_transformers";
 import { SystemMessage, HumanMessage, AIMessage } from "@langchain/core/messages";
+import { getVectorStore } from "@parse-pal/rag/vectorstore";
 import * as readline from "readline";
 
-const COLLECTION_NAME = "pdf_docs";
 const TOP_K = 5;
 
 const llm = new ChatGroq({
@@ -16,16 +14,9 @@ const llm = new ChatGroq({
 
 async function chat() {
   console.log("Loading embedding model...");
-  const embeddings = new HuggingFaceTransformersEmbeddings({
-    model: "sentence-transformers/all-MiniLM-L6-v2",
-  });
-
-  let vectorStore: Chroma;
+  let vectorStore: Awaited<ReturnType<typeof getVectorStore>>;
   try {
-    vectorStore = await Chroma.fromExistingCollection(embeddings, {
-      collectionName: COLLECTION_NAME,
-      url: "http://localhost:8000",
-    });
+    vectorStore = await getVectorStore();
   } catch {
     console.error('No documents ingested yet. Run "pnpm ingest <pdf>" first.');
     process.exit(1);
