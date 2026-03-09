@@ -7,9 +7,15 @@
     "dev": "turbo dev",
     "build": "turbo build",
     "ingest": "turbo ingest",
-    "chat": "turbo chat"
+    "chat": "turbo chat",
+    "release": "release-it",
+    "release:patch": "release-it patch",
+    "release:minor": "release-it minor",
+    "release:major": "release-it major"
   },
   "devDependencies": {
+    "@release-it/conventional-changelog": "^10.0.5",
+    "release-it": "^19.2.4",
     "turbo": "latest"
   },
   "pnpm": {

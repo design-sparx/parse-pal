@@ -117,7 +117,19 @@ pnpm dev        # Run web app in development mode
 pnpm build      # Build all packages
 pnpm ingest     # Ingest a PDF via CLI
 pnpm chat       # Start interactive CLI chat
+pnpm release    # Create an interactive root release
 ```
+
+## Releases
+
+```bash
+pnpm release
+pnpm release:patch
+pnpm release:minor
+pnpm release:major
+```
+
+The release workflow is managed at the workspace root with `release-it`. It bumps the root `package.json` version, updates `CHANGELOG.md` from Conventional Commit history, creates a release commit, and tags the repo as `v<version>`.
 
 ## Notes
 
