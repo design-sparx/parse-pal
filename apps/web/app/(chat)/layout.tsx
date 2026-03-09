@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import { useConversations } from "@/app/hooks/useConversations"
+import { EmptyAppView } from "@/app/components/EmptyAppView"
 import { Sidebar } from "@/app/components/Sidebar"
 import { Button } from "@/components/ui/button"
 import { PanelLeftOpenIcon } from "lucide-react"
@@ -12,13 +13,18 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
   const pathname = usePathname()
   const [sidebarOpen, setSidebarOpen] = useState(true)
 
-  const { conversations, deleteConversation } = useConversations()
+  const { conversations, deleteConversation, isLoaded } = useConversations()
 
   const activeId = pathname.match(/^\/chats\/(.+)$/)?.[1] ?? null
+  const showEmptyAppView = isLoaded && conversations.length === 0 && pathname === "/new"
 
   function handleDelete(id: string) {
     deleteConversation(id)
     if (activeId === id) router.push("/new")
+  }
+
+  if (showEmptyAppView) {
+    return <EmptyAppView>{children}</EmptyAppView>
   }
 
   return (

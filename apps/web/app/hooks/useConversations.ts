@@ -34,11 +34,13 @@ function save(conversations: Conversation[]) {
 export function useConversations() {
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [activeId, setActiveId] = useState<string | null>(null)
+  const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
     const stored = load()
     setConversations(stored)
     if (stored.length > 0) setActiveId(stored[0].id)
+    setIsLoaded(true)
   }, [])
 
   const active = conversations.find((c) => c.id === activeId) ?? null
@@ -103,6 +105,7 @@ export function useConversations() {
     conversations,
     activeId,
     active,
+    isLoaded,
     createConversation,
     saveMessages,
     deleteConversation,
