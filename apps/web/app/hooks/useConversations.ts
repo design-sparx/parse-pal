@@ -1,6 +1,14 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import {
+  createElement,
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react"
 import type { Message } from "ai"
 
 export type Conversation = {
@@ -31,13 +39,32 @@ function save(conversations: Conversation[]) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(conversations))
 }
 
-export function useConversations() {
+type ConversationsContextValue = {
+  conversations: Conversation[]
+  activeId: string | null
+  active: Conversation | null
+  isLoaded: boolean
+  createConversation: (
+    docName: string,
+    meta?: { fileSize: string; pages: number; chunks: number; summary: string }
+  ) => string
+  saveMessages: (id: string, messages: Message[]) => void
+  deleteConversation: (id: string) => void
+  updateConversationTitle: (id: string, title: string) => void
+  setActiveId: React.Dispatch<React.SetStateAction<string | null>>
+}
+
+const ConversationsContext = createContext<ConversationsContextValue | null>(null)
+
+function ConversationsProviderImpl({ children }: { children: React.ReactNode }) {
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [activeId, setActiveId] = useState<string | null>(null)
   const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
     const stored = load()
+    // Hydrate the client store from localStorage after mount.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setConversations(stored)
     if (stored.length > 0) setActiveId(stored[0].id)
     setIsLoaded(true)
@@ -101,14 +128,59 @@ export function useConversations() {
     [conversations]
   )
 
-  return {
-    conversations,
-    activeId,
-    active,
-    isLoaded,
-    createConversation,
-    saveMessages,
-    deleteConversation,
-    setActiveId,
+  const updateConversationTitle = useCallback((id: string, title: string) => {
+    const trimmedTitle = title.trim()
+    if (!trimmedTitle) return
+
+    setConversations((prev) => {
+      const next = prev.map((conversation) =>
+        conversation.id === id
+          ? { ...conversation, title: trimmedTitle }
+          : conversation
+      )
+      save(next)
+      return next
+    })
+  }, [])
+
+  const value = useMemo(
+    () => ({
+      conversations,
+      activeId,
+      active,
+      isLoaded,
+      createConversation,
+      saveMessages,
+      deleteConversation,
+      updateConversationTitle,
+      setActiveId,
+    }),
+    [
+      conversations,
+      activeId,
+      active,
+      isLoaded,
+      createConversation,
+      saveMessages,
+      deleteConversation,
+      updateConversationTitle,
+      setActiveId,
+    ]
+  )
+
+  return createElement(ConversationsContext.Provider, { value }, children)
+}
+
+export function ConversationsProvider({ children }: { children: React.ReactNode }) {
+  return createElement(ConversationsProviderImpl, null, children)
+}
+
+export function useConversations() {
+  const context = useContext(ConversationsContext)
+
+  if (!context) {
+    throw new Error("useConversations must be used within ConversationsProvider")
   }
+
+  return context
 }

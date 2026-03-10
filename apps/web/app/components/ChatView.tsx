@@ -10,14 +10,9 @@ import {
   Loader2Icon,
   CheckCircle2Icon,
   ArrowRightIcon,
-  PanelRightIcon,
-  PanelRightCloseIcon,
-  XIcon,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Separator } from "@/components/ui/separator"
 import type { Conversation } from "@/app/hooks/useConversations"
 
 export type IngestMeta = {
@@ -38,14 +33,6 @@ type Props = {
   conversation: Conversation | null
   onIngestSuccess: (filename: string, meta: IngestMeta) => void
   onMessagesChange: (messages: Message[]) => void
-}
-
-function formatDate(ts: number): string {
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(ts))
 }
 
 function formatFileSize(bytes: number): string {
@@ -102,12 +89,9 @@ export function ChatView({
   const hasExistingMessages = (conversation?.messages.length ?? 0) > 0
   const [ingest, setIngest] = useState<IngestState>({ status: "idle" })
   const [isActive, setIsActive] = useState(hasExistingMessages)
-  const [showDetails, setShowDetails] = useState(hasExistingMessages)
-  const [showInfo, setShowInfo] = useState(true)
   const fileRef = useRef<HTMLInputElement>(null)
-  const bottomRef = useRef<HTMLDivElement>(null)
 
-  const { messages, input, handleInputChange, handleSubmit, isLoading, setMessages } =
+  const { messages, input, handleInputChange, handleSubmit, isLoading } =
     useChat({
       api: "/api/chat",
       initialMessages: conversation?.messages ?? [],
@@ -118,10 +102,6 @@ export function ChatView({
       onMessagesChange(messages)
     }
   }, [messages, isLoading]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messages, isLoading])
 
   async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -157,11 +137,9 @@ export function ChatView({
 
   function handleStartChatting() {
     setIsActive(true)
-    setShowInfo(true)
   }
 
   const showChat = isActive || hasExistingMessages
-  const docSummary = conversation?.summary
 
   const fileInput = (
     <input
@@ -205,7 +183,7 @@ export function ChatView({
             </div>
             <div className="min-w-0 flex-1">
               <p className="font-medium text-sm truncate">{conversation.docName}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">
+              <p className="mt-0.5 font-mono text-[11px] text-muted-foreground">
                 {[
                   conversation.fileSize,
                   conversation.pages && `${conversation.pages} pages`,
@@ -219,14 +197,14 @@ export function ChatView({
           </div>
 
           <div className="flex flex-col gap-2">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+            <p className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
               AI Summary
             </p>
             <p className="text-sm leading-relaxed">{conversation.summary}</p>
           </div>
 
           <Button onClick={handleStartChatting} className="gap-2 w-full">
-            Start chatting
+            Start Chatting
             <ArrowRightIcon className="size-4" />
           </Button>
         </div>
@@ -262,232 +240,62 @@ export function ChatView({
     )
   }
 
-  // Conversation details: shown when opening an existing conversation
-  if (showDetails && conversation) {
-    const lastUserMsg = [...conversation.messages].reverse().find((m) => m.role === "user")
-    const lastAssistantMsg = [...conversation.messages].reverse().find((m) => m.role === "assistant")
-    const msgCount = conversation.messages.length
-
-    return (
-      <div className="flex flex-col flex-1 items-center justify-center px-6">
-        {fileInput}
-        <div className="flex flex-col gap-5 max-w-md w-full">
-
-          {/* Document card */}
-          <div className="flex items-start gap-4 p-4 rounded-xl border border-border bg-muted/40">
-            <div className="rounded-lg bg-background p-2.5 border border-border shrink-0">
-              <FileTextIcon className="size-5 text-muted-foreground" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="font-medium text-sm truncate">{conversation.docName}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {[
-                  conversation.fileSize,
-                  conversation.pages && `${conversation.pages} pages`,
-                  conversation.chunks && `${conversation.chunks} chunks`,
-                ]
-                  .filter(Boolean)
-                  .join(" · ")}
-              </p>
-            </div>
-          </div>
-
-          {/* AI Summary */}
-          {conversation.summary && (
-            <div className="flex flex-col gap-2">
-              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                AI Summary
-              </p>
-              <p className="text-sm leading-relaxed">{conversation.summary}</p>
-            </div>
-          )}
-
-          <Separator />
-
-          {/* Conversation stats */}
-          <div className="flex flex-col gap-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Conversation
-            </p>
-            <div className="flex items-center gap-4 text-xs text-muted-foreground">
-              <span>{msgCount} message{msgCount !== 1 ? "s" : ""}</span>
-              <span>&middot;</span>
-              <span>Started {formatDate(conversation.createdAt)}</span>
-            </div>
-
-            {/* Last exchange preview */}
-            {lastUserMsg && (
-              <div className="flex flex-col gap-2 rounded-lg border border-border p-3 bg-background">
-                <div className="flex flex-col gap-1">
-                  <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-                    Last question
-                  </p>
-                  <p className="text-xs line-clamp-2">{lastUserMsg.content}</p>
-                </div>
-                {lastAssistantMsg && (
-                  <>
-                    <Separator />
-                    <div className="flex flex-col gap-1">
-                      <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-                        Last answer
-                      </p>
-                      <p className="text-xs text-muted-foreground line-clamp-2">
-                        {lastAssistantMsg.content}
-                      </p>
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* CTA */}
-          <Button onClick={() => setShowDetails(false)} className="gap-2 w-full">
-            Continue chatting
-            <ArrowRightIcon className="size-4" />
-          </Button>
-        </div>
-      </div>
-    )
-  }
-
   // Active chat
   return (
-    <div className="flex flex-col flex-1 min-h-0">
+    <div className="flex min-h-0 flex-1 flex-col">
       {fileInput}
 
-      {/* Header */}
-      <div className="flex items-center justify-between px-6 py-3 border-b border-border shrink-0">
-        <div className="flex items-center gap-2 min-w-0">
-          <h2 className="font-semibold text-sm truncate">
-            {conversation ? conversation.title : "New Chat"}
-          </h2>
-        </div>
-        {docSummary && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setShowInfo((v) => !v)}
-            title={showInfo ? "Hide document info" : "Show document info"}
-            className="shrink-0"
-          >
-            {showInfo ? (
-              <PanelRightCloseIcon className="size-4" />
-            ) : (
-              <PanelRightIcon className="size-4" />
-            )}
-          </Button>
-        )}
-      </div>
-
-      {/* Body: chat column + optional info panel */}
-      <div className="flex flex-1 min-h-0">
-
-        {/* Chat column */}
-        <div className="flex flex-col flex-1 min-h-0 min-w-0">
-          <ScrollArea className="flex-1">
-            <div className="flex flex-col gap-4 max-w-3xl mx-auto px-6 py-4">
-              {messages.length === 0 && (
-                <div className="flex items-center justify-center text-muted-foreground text-sm py-24 text-center">
-                  Ask anything about your document
-                </div>
-              )}
-              {messages.map((m) => (
-                <div
-                  key={m.id}
-                  className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
-                >
-                  <div
-                    className={`max-w-[80%] px-4 py-2 rounded-2xl text-sm whitespace-pre-wrap ${m.role === "user"
-                        ? "bg-primary text-primary-foreground rounded-br-sm"
-                        : "bg-muted text-foreground rounded-bl-sm"
-                      }`}
-                  >
-                    {m.content}
-                  </div>
-                </div>
-              ))}
-              {isLoading && (
-                <div className="flex justify-start">
-                  <div className="bg-muted px-4 py-2 rounded-2xl rounded-bl-sm text-sm text-muted-foreground">
-                    Thinking…
-                  </div>
-                </div>
-              )}
-              <div ref={bottomRef} />
-            </div>
-          </ScrollArea>
-
-          <div className="px-6 py-4 border-t border-border shrink-0">
-            <form onSubmit={handleSubmit} className="flex gap-2 max-w-3xl mx-auto">
-              <Input
-                value={input}
-                onChange={handleInputChange}
-                disabled={isLoading}
-                placeholder="Ask a question…"
-                className="flex-1"
-              />
-              <Button
-                type="submit"
-                disabled={isLoading || !input.trim()}
-                size="icon"
-              >
-                <SendIcon />
-              </Button>
-            </form>
+      <div className="mx-auto flex max-w-3xl flex-1 flex-col gap-4 px-6 py-4">
+        {messages.length === 0 && (
+          <div className="flex items-center justify-center py-24 text-center text-sm text-muted-foreground">
+            Ask anything about your document
           </div>
-        </div>
-
-        {/* Info panel */}
-        {showInfo && docSummary && (
-          <aside className="w-72 border-l border-border flex flex-col shrink-0">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-border shrink-0">
-              <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Document
-              </span>
-              <button
-                onClick={() => setShowInfo(false)}
-                className="text-muted-foreground hover:text-foreground transition-colors"
-                title="Close"
-              >
-                <XIcon className="size-3.5" />
-              </button>
-            </div>
-
-            <ScrollArea className="flex-1">
-              <div className="flex flex-col gap-4 p-4">
-                {/* File metadata */}
-                <div className="flex items-start gap-3">
-                  <div className="rounded-md bg-muted p-1.5 shrink-0">
-                    <FileTextIcon className="size-4 text-muted-foreground" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium truncate">
-                      {conversation?.docName}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {conversation?.fileSize && `${conversation.fileSize} · `}
-                      {conversation?.pages && `${conversation.pages} pages · `}
-                      {conversation?.chunks && `${conversation.chunks} chunks`}
-                    </p>
-                  </div>
-                </div>
-
-                <Separator />
-
-                {/* AI Summary */}
-                <div className="flex flex-col gap-2">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    AI Summary
-                  </p>
-                  <p className="text-sm leading-relaxed text-foreground">
-                    {docSummary}
-                  </p>
-                </div>
-              </div>
-            </ScrollArea>
-          </aside>
         )}
+        {messages.map((message) => (
+          <div
+            key={message.id}
+            className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
+          >
+            <div
+              className={`max-w-[80%] whitespace-pre-wrap rounded-2xl px-4 py-2 text-sm ${message.role === "user"
+                ? "rounded-br-sm bg-primary text-primary-foreground"
+                : "rounded-bl-sm bg-muted text-foreground"
+                }`}
+            >
+              {message.content}
+            </div>
+          </div>
+        ))}
+        {isLoading && (
+          <div className="flex justify-start">
+            <div className="rounded-2xl rounded-bl-sm bg-muted px-4 py-2 text-sm text-muted-foreground">
+              Thinking…
+            </div>
+          </div>
+        )}
+
+        <div className="mt-auto border-t border-border pt-4 shrink-0">
+          <form onSubmit={handleSubmit} className="mx-auto flex max-w-3xl gap-2">
+            <Input
+              value={input}
+              onChange={handleInputChange}
+              disabled={isLoading}
+              placeholder="Ask a question…"
+              aria-label="Ask a question about your document"
+              autoComplete="off"
+              className="flex-1"
+              name="prompt"
+            />
+            <Button
+              type="submit"
+              disabled={isLoading || !input.trim()}
+              size="icon"
+              aria-label="Send message"
+            >
+              <SendIcon />
+            </Button>
+          </form>
+        </div>
       </div>
     </div>
   )

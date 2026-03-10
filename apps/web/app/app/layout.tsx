@@ -2,25 +2,25 @@
 
 import { useState } from "react"
 import { useRouter, usePathname } from "next/navigation"
-import { useConversations } from "@/app/hooks/useConversations"
+import { ConversationsProvider, useConversations } from "@/app/hooks/useConversations"
 import { EmptyAppView } from "@/app/components/EmptyAppView"
 import { Sidebar } from "@/app/components/Sidebar"
 import { Button } from "@/components/ui/button"
 import { PanelLeftOpenIcon } from "lucide-react"
 
-export default function ChatLayout({ children }: { children: React.ReactNode }) {
+function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const pathname = usePathname()
   const [sidebarOpen, setSidebarOpen] = useState(true)
 
   const { conversations, deleteConversation, isLoaded } = useConversations()
 
-  const activeId = pathname.match(/^\/chats\/(.+)$/)?.[1] ?? null
-  const showEmptyAppView = isLoaded && conversations.length === 0 && pathname === "/new"
+  const activeId = pathname.match(/^\/app\/chats\/(.+)$/)?.[1] ?? null
+  const showEmptyAppView = isLoaded && conversations.length === 0 && pathname === "/app"
 
   function handleDelete(id: string) {
     deleteConversation(id)
-    if (activeId === id) router.push("/new")
+    if (activeId === id) router.push("/app")
   }
 
   if (showEmptyAppView) {
@@ -33,10 +33,10 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
         <Sidebar
           conversations={conversations}
           activeId={activeId}
-          onSelect={(id) => router.push(`/chats/${id}`)}
+          onSelect={(id) => router.push(`/app/chats/${id}`)}
           onDelete={handleDelete}
           onToggle={() => setSidebarOpen(false)}
-          onNewChat={() => router.push("/new")}
+          onNewChat={() => router.push("/app")}
         />
       )}
       <div className="flex flex-1 min-w-0 min-h-0 overflow-hidden">
@@ -57,5 +57,13 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
         </div>
       </div>
     </div>
+  )
+}
+
+export default function AppLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <ConversationsProvider>
+      <AppShell>{children}</AppShell>
+    </ConversationsProvider>
   )
 }

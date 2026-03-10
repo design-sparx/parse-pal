@@ -31,10 +31,13 @@ parse-pal/
 ├── apps/
 │   ├── web/                  # Next.js web app
 │   │   └── app/
-│   │       ├── (chat)/       # Route group — shared sidebar layout
-│   │       │   ├── layout.tsx       # Sidebar shell
-│   │       │   ├── new/page.tsx     # /new — upload & welcome
-│   │       │   └── chats/[id]/      # /chats/:id — conversation
+│   │       ├── (public)/     # Public project pages
+│   │       │   ├── about/page.tsx
+│   │       │   └── changelogs/page.tsx
+│   │       ├── app/          # Workspace routes
+│   │       │   ├── layout.tsx
+│   │       │   ├── page.tsx          # /app — upload & welcome
+│   │       │   └── chats/[id]/       # /app/chats/:id — conversation
 │   │       ├── api/
 │   │       │   ├── chat/route.ts    # Streaming chat endpoint
 │   │       │   └── ingest/route.ts  # PDF upload & ingestion endpoint
@@ -84,19 +87,23 @@ Open [http://localhost:3000](http://localhost:3000), click **Upload a PDF** in t
 
 | Route | Description |
 |---|---|
-| `/` | Redirects to `/new` |
-| `/new` | Welcome screen — upload a PDF to begin |
-| `/chats/:id` | Conversation page — details view → chat |
+| `/` | Redirects to `/about` |
+| `/app` | Workspace welcome screen — upload a PDF to begin |
+| `/app/chats/:id` | Conversation page — details view → chat |
+| `/about` | Public project overview and learning context |
+| `/changelogs` | Public release notes sourced from `CHANGELOG.md` |
+| `/new` | Legacy redirect to `/app` |
+| `/chats/:id` | Legacy redirect to `/app/chats/:id` |
 
 ## User Flow
 
 ```
-/new  →  Upload PDF  →  Uploading…  →  Analyzing…
-      →  /chats/:id  →  Onboarding card (summary + "Start chatting")
-                     →  Chat  →  Ask questions
+ /about  →  Open App  →  /app  →  Upload PDF  →  Uploading…  →  Analyzing…
+                               →  /app/chats/:id  →  Onboarding card
+                                                   →  Chat  →  Ask questions
 ```
 
-Selecting an existing conversation from the sidebar navigates to `/chats/:id` and shows the conversation details page (document info, AI summary, last exchange preview) before resuming the chat.
+Selecting an existing conversation from the sidebar navigates to `/app/chats/:id` and shows the conversation details page (document info, AI summary, last exchange preview) before resuming the chat.
 
 ## CLI Usage
 
@@ -130,6 +137,8 @@ pnpm release:major
 ```
 
 The release workflow is managed at the workspace root with `release-it`. It bumps the root `package.json` version, updates `CHANGELOG.md` from Conventional Commit history, creates a release commit, and tags the repo as `v<version>`.
+
+The web app also exposes `/changelogs`, which reads the root `CHANGELOG.md` so release notes are visible in-product, and surfaces the GitHub repository link across the UI for users who want to inspect, clone, or star the project.
 
 ## Notes
 
