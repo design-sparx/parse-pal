@@ -1,0 +1,14 @@
+.git
+.idea
+.turbo
+node_modules
+apps/web/.next
+apps/web/node_modules
+apps/cli/node_modules
+packages/rag/node_modules
+docs
+chroma
+*.log
+.env
+apps/web/.env.local
+apps/cli/.env

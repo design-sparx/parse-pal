@@ -1,7 +1,15 @@
-import { HuggingFaceTransformersEmbeddings } from "@langchain/community/embeddings/huggingface_transformers";
+type EmbeddingsLike = {
+  embedDocuments(texts: string[]): Promise<number[][]>;
+  embedQuery(text: string): Promise<number[]>;
+};
 
-export function createEmbeddings() {
+const LOCAL_MODEL = "sentence-transformers/all-MiniLM-L6-v2";
+export async function createEmbeddings(): Promise<EmbeddingsLike> {
+  const { HuggingFaceTransformersEmbeddings } = await import(
+    "@langchain/community/embeddings/huggingface_transformers"
+  );
+
   return new HuggingFaceTransformersEmbeddings({
-    model: "sentence-transformers/all-MiniLM-L6-v2",
+    model: LOCAL_MODEL,
   });
 }

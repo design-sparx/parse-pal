@@ -1,36 +1,73 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ParsePal Web
 
-## Getting Started
+This workspace contains the hosted Next.js application for ParsePal.
 
-First, run the development server:
+## Local Development
+
+Run from the repository root:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm --filter @parse-pal/web dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The app is available at `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+For the hosted-style flow, set these variables in `apps/web/.env.local`:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```env
+GROQ_API_KEY=
+DATABASE_URL=
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+CHROMA_API_KEY=
+CHROMA_TENANT=
+CHROMA_DATABASE=
+```
 
-## Learn More
+If you are using local Chroma instead of Chroma Cloud, set:
 
-To learn more about Next.js, take a look at the following resources:
+```env
+CHROMA_URL=http://localhost:8000
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Railway Deployment
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+ParsePal's hosted web app is intended to run on Railway, not Netlify. The repo includes:
 
-## Deploy on Vercel
+- `apps/web/Dockerfile` for the production container image
+- `railway.json` at the repository root to point Railway at that Dockerfile
+- `apps/web/next.config.ts` with `output: "standalone"` for a smaller runtime image
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Required Railway Variables
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```env
+GROQ_API_KEY=
+DATABASE_URL=
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+CHROMA_API_KEY=
+CHROMA_TENANT=
+CHROMA_DATABASE=
+```
+
+Or, for a local/self-hosted Chroma deployment reachable from Railway:
+
+```env
+CHROMA_URL=
+```
+
+### Deploy Steps
+
+1. Create a Railway project from this repository.
+2. Let Railway use the committed `railway.json` and `apps/web/Dockerfile`.
+3. Add the environment variables above.
+4. Deploy the service.
+5. Upload a PDF and verify the ingest job reaches `ready`.
+
+## Notes
+
+- The hosted app keeps local Hugging Face embeddings, so no embeddings API key is required.
+- The ONNX-backed model downloads on first run.
+- Cloudinary PDF delivery must be enabled or ingest will fail when the worker downloads the uploaded file.

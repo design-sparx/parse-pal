@@ -165,7 +165,7 @@ A sample document is available at `docs/my-document.pdf`.
 
 The hosted web app assumes:
 
-- Netlify for the Next.js app
+- Railway for the Next.js app
 - Cloudinary for PDF storage
 - Neon for conversation, document, and job state
 - Chroma Cloud or another reachable Chroma deployment for vectors
@@ -182,6 +182,16 @@ CHROMA_API_KEY=
 CHROMA_TENANT=
 CHROMA_DATABASE=
 ```
+
+The repository includes a root `railway.json` and `apps/web/Dockerfile` so Railway can build the monorepo and run the standalone Next.js server with the native libraries needed by the embedding stack.
+
+### Railway Deploy Steps
+
+1. Create a Railway project from this repository.
+2. Keep the repository root as the service source so Railway picks up `railway.json`.
+3. Add the hosted environment variables listed above.
+4. Deploy the service.
+5. Verify PDF upload, ingest completion, and chat in the deployed app.
 
 ### Cloudinary Note
 
@@ -228,7 +238,7 @@ parse-pal/
 
 - Local development defaults to `CHROMA_URL=http://localhost:8000`.
 - If `CHROMA_API_KEY`, `CHROMA_TENANT`, and `CHROMA_DATABASE` are all set, ParsePal connects to Chroma Cloud instead of the local Chroma instance.
-- Hosted async ingest uses Cloudinary for PDF storage, Neon for conversation and job state, and an async worker path for document processing.
+- Hosted async ingest uses Cloudinary for PDF storage, Neon for conversation and job state, and an async worker path for document processing on Railway.
 - Chroma ingestion is document-scoped through metadata such as `conversationId` and `documentId`.
 - Embeddings are generated locally, so no embeddings API key is required.
 - The ONNX model is downloaded on first run.

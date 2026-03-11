@@ -35,6 +35,6 @@ export function buildDocumentScopeFilter(scope: DocumentScope): DocumentScopeFil
 }
 
 export async function getVectorStore() {
-  const embeddings = createEmbeddings();
+  const embeddings = await createEmbeddings();
   return Chroma.fromExistingCollection(embeddings, getLangChainChromaArgs());
 }

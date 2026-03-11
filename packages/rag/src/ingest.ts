@@ -35,7 +35,7 @@ export async function ingestPDF(filePath: string, scope: DocumentScope = {}) {
     .join("\n\n")
     .slice(0, 4000);
 
-  const embeddings = createEmbeddings();
+  const embeddings = await createEmbeddings();
   await Chroma.fromDocuments(chunks, embeddings, getLangChainChromaArgs());
 
   return { pages: docs.length, chunks: chunks.length, previewText };
