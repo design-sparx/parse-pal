@@ -4,6 +4,7 @@ import Link from "next/link"
 import { PanelLeftCloseIcon, Trash2Icon, FileTextIcon, GithubIcon, UploadIcon } from "lucide-react"
 import appPackage from "../../../../package.json"
 import { Logo } from "@/components/Logo"
+import { ThemeToggleButton } from "@/app/components/ThemeToggleButton"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
@@ -41,15 +42,18 @@ export function Sidebar({
             v{appPackage.version}
           </span>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onToggle}
-          title="Collapse sidebar"
-          aria-label="Collapse sidebar"
-        >
-          <PanelLeftCloseIcon className="size-4" />
-        </Button>
+        <div className="flex items-center gap-1">
+          <ThemeToggleButton />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onToggle}
+            title="Collapse sidebar"
+            aria-label="Collapse sidebar"
+          >
+            <PanelLeftCloseIcon className="size-4" />
+          </Button>
+        </div>
       </div>
 
       <Separator />

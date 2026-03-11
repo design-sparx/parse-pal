@@ -5,6 +5,7 @@ import { useRouter, usePathname } from "next/navigation"
 import { ConversationsProvider, useConversations } from "@/app/hooks/useConversations"
 import { EmptyAppView } from "@/app/components/EmptyAppView"
 import { Sidebar } from "@/app/components/Sidebar"
+import { ThemeToggleButton } from "@/app/components/ThemeToggleButton"
 import { Button } from "@/components/ui/button"
 import { PanelLeftOpenIcon } from "lucide-react"
 
@@ -42,6 +43,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
       <div className="flex flex-1 min-w-0 min-h-0 overflow-hidden">
         {!sidebarOpen && (
           <div className="shrink-0 flex flex-col items-center pt-[10px] px-1 border-r border-border">
+            <ThemeToggleButton />
             <Button
               variant="ghost"
               size="icon"

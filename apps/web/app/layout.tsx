@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, Space_Grotesk } from "next/font/google";
+import { getThemeInitScript } from "@/lib/theme";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -31,7 +32,7 @@ export default function RootLayout({
             Edge/Chrome from applying their own automatic dark mode override */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){var d=document.documentElement;var m=window.matchMedia('(prefers-color-scheme: dark)');if(m.matches)d.classList.add('dark');m.addEventListener('change',function(e){d.classList.toggle('dark',e.matches);});})()`,
+            __html: getThemeInitScript(),
           }}
         />
       </head>

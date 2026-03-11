@@ -12,6 +12,7 @@ import {
   publicSecondaryActionClassName,
 } from "@/app/components/public-capsules"
 import { Button } from "@/components/ui/button"
+import { ThemeToggleButton } from "@/app/components/ThemeToggleButton"
 
 type Props = {
   compact?: boolean
@@ -53,6 +54,11 @@ export function PublicNav({ compact = false }: Props) {
         ))}
       </div>
       <div className="flex items-center gap-2">
+        <ThemeToggleButton
+          variant="outline"
+          size={compact ? "sm" : "icon"}
+          className="shrink-0"
+        />
         {!isAppRoute && (
           <Button
             asChild
