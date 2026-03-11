@@ -38,9 +38,6 @@ export function Sidebar({
       <div className="flex items-center justify-between px-4 py-3">
         <div className="flex min-w-0 items-center gap-2">
           <Logo className="text-sidebar-foreground" />
-          <span className="rounded-md border border-sidebar-border bg-sidebar-accent/60 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
-            v{appPackage.version}
-          </span>
         </div>
         <div className="flex items-center gap-1">
           <ThemeToggleButton />
@@ -131,6 +128,14 @@ export function Sidebar({
             <GithubIcon className="size-3.5 shrink-0" />
             Open Source
           </a>
+          <div className="px-3 pt-2">
+            <div className="flex items-center justify-between border-t border-sidebar-border/70 pt-2 text-[10px] uppercase tracking-[0.18em] text-muted-foreground/80">
+              <span>Version</span>
+              <span className="font-mono normal-case tracking-normal text-muted-foreground">
+                v{appPackage.version}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
     </aside>
