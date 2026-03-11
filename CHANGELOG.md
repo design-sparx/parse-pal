@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.3.1 (2026-03-11)
+
+### Features
+
+* add chat and ingest functionality with PDF support ([9b5e84b](https://github.com/design-sparx/parse-pal/commit/9b5e84b1cada34621a642f17e7540e3c28d622d6))
+* add sidebar toggle functionality and improve ChatView layout ([528bed5](https://github.com/design-sparx/parse-pal/commit/528bed56c9dcec512a8780ae8dbd07c1ba3511d3))
+* added next js and integrated to cli ([a48c111](https://github.com/design-sparx/parse-pal/commit/a48c111fa7da9f48cf1230e64ea65fa92527460a))
+* enhance ChatView with document summary and onboarding support ([b7ba3dd](https://github.com/design-sparx/parse-pal/commit/b7ba3dd583094e30a22fc98f515554d2fead9b18))
+* implement chat layout and new chat page, add sidebar upload functionality ([fc9aed0](https://github.com/design-sparx/parse-pal/commit/fc9aed03cc45b3f8f2f0656f5d681db97852e00c))
+* **ui:** improves PDF chat onboarding and UX feedback ([c658313](https://github.com/design-sparx/parse-pal/commit/c65831312be06aba6eb117067182a06e43903aa4))
+* **ui:** refine chat experience and content rendering ([cb302b5](https://github.com/design-sparx/parse-pal/commit/cb302b5b5e30c30c6e641d9809cd0c0084388cfc))
+* **ui:** updated empty UI state ([def6d14](https://github.com/design-sparx/parse-pal/commit/def6d14b0703797087290b361e461c99c88c14e8))
+* **ui:** updated empty UI/start page ([a1077f5](https://github.com/design-sparx/parse-pal/commit/a1077f5323291db2725c1266f60caf18f4b84370))
+* update font settings to IBM Plex and add README with project details ([9fede2c](https://github.com/design-sparx/parse-pal/commit/9fede2c42abb6f3adf5adfa5d09422f877fdf6b7))
+
 ## [1.3.0](https://github.com/design-sparx/parse-pal/compare/v1.2.2...v1.3.0) (2026-03-10)
 
 ### Features
