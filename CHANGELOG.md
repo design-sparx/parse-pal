@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.4.0](https://github.com/design-sparx/parse-pal/compare/v1.3.3...v1.4.0) (2026-03-11)
+
+### Features
+
+* update our apis to use cloudinary for storage and postgres for our DB ([4143245](https://github.com/design-sparx/parse-pal/commit/4143245fbbdbe0b8b449b05dd940f8b6f73ae86d))
+
 ## [1.3.3](https://github.com/design-sparx/parse-pal/compare/v1.3.2...v1.3.3) (2026-03-11)
 
 * refactor: added release on each release-it running config ([e192e1e](https://github.com/design-sparx/parse-pal/commit/e192e1e3a84c02bb3a792be4a14693b4f1438643))
