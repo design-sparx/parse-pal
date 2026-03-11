@@ -1,9 +1,8 @@
 import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import { Chroma } from "@langchain/community/vectorstores/chroma";
-import { ChromaClient } from "chromadb";
 import { createEmbeddings } from "./embeddings";
-import { COLLECTION_NAME, CHROMA_URL } from "./vectorstore";
+import { COLLECTION_NAME, createChromaClient, getLangChainChromaArgs } from "./chroma-config";
 
 type PrimitiveMetadata = Record<string, string | number | boolean | null>;
 
@@ -31,7 +30,7 @@ export async function ingestPDF(filePath: string) {
   }));
 
   // Clear existing collection
-  const client = new ChromaClient({ host: "localhost", port: 8000 });
+  const client = createChromaClient();
   try {
     await client.deleteCollection({ name: COLLECTION_NAME });
   } catch {
@@ -39,10 +38,7 @@ export async function ingestPDF(filePath: string) {
   }
 
   const embeddings = createEmbeddings();
-  await Chroma.fromDocuments(chunks, embeddings, {
-    collectionName: COLLECTION_NAME,
-    url: CHROMA_URL,
-  });
+  await Chroma.fromDocuments(chunks, embeddings, getLangChainChromaArgs());
 
   return { pages: docs.length, chunks: chunks.length };
 }

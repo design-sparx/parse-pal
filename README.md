@@ -66,6 +66,20 @@ Minimum required variable:
 GROQ_API_KEY=your_key_here
 ```
 
+Local development uses Chroma on `http://localhost:8000` by default. If you want to override that local endpoint:
+
+```env
+CHROMA_URL=http://localhost:8000
+```
+
+For Chroma Cloud, set all three variables below. When they are present, the app and CLI use Chroma Cloud instead of the local `CHROMA_URL` fallback:
+
+```env
+CHROMA_API_KEY=your_chroma_cloud_key
+CHROMA_TENANT=your_chroma_tenant
+CHROMA_DATABASE=your_chroma_database
+```
+
 The root `.env.example` is included as a reference.
 
 ### Install And Run
@@ -141,6 +155,8 @@ parse-pal/
 ## Implementation Notes
 
 - The current ingestion flow targets one PDF collection at a time and recreates the `pdf_docs` ChromaDB collection on each ingest.
+- Local development defaults to `CHROMA_URL=http://localhost:8000`.
+- If `CHROMA_API_KEY`, `CHROMA_TENANT`, and `CHROMA_DATABASE` are all set, ParsePal connects to Chroma Cloud instead of the local Chroma instance.
 - Embeddings are generated locally, so no embeddings API key is required.
 - The ONNX model is downloaded on first run.
 - `@parse-pal/rag` is consumed directly from TypeScript source and does not have a separate build step.

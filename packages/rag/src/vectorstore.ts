@@ -1,13 +1,10 @@
 import { Chroma } from "@langchain/community/vectorstores/chroma";
 import { createEmbeddings } from "./embeddings";
+import { getLangChainChromaArgs } from "./chroma-config";
 
-export const COLLECTION_NAME = "pdf_docs";
-export const CHROMA_URL = "http://localhost:8000";
+export { COLLECTION_NAME } from "./chroma-config";
 
 export async function getVectorStore() {
   const embeddings = createEmbeddings();
-  return Chroma.fromExistingCollection(embeddings, {
-    collectionName: COLLECTION_NAME,
-    url: CHROMA_URL,
-  });
+  return Chroma.fromExistingCollection(embeddings, getLangChainChromaArgs());
 }
