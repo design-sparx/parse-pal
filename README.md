@@ -1,133 +1,154 @@
 # ParsePal
 
-Chat with your PDF documents using RAG (Retrieval-Augmented Generation). Upload a PDF, get an instant AI summary, then ask it anything.
+ParsePal is a monorepo for a PDF-focused RAG application that ingests documents, generates summaries, and supports grounded chat through both a Next.js web app and a CLI interface.
 
-## Features
+## Overview
 
-- **PDF ingestion** — upload a PDF and it gets chunked and embedded into ChromaDB
-- **AI summary** — an automatic 2–3 sentence summary is generated after every upload
-- **Streaming chat** — ask questions and get streamed answers grounded in your document
-- **Conversation history** — past conversations are persisted to `localStorage` with full message history
-- **Conversation details** — each chat has a details page showing the document, AI summary, and a preview of the last exchange
-- **Document info panel** — a toggleable side panel in the chat view shows the document metadata and summary at a glance
-- **Sidebar** — collapsible conversation list with an upload CTA to start new chats
+This project is built as a practical retrieval-augmented generation system rather than a generic chat wrapper. A PDF is parsed, chunked, embedded locally, stored in ChromaDB, and then queried at chat time to produce responses grounded in the uploaded document.
 
-## Stack
+The repository is structured as a `pnpm` workspace with a shared `@parse-pal/rag` package that powers both user surfaces:
+
+- `apps/web` for the browser-based experience
+- `apps/cli` for local ingestion and terminal chat
+- `packages/rag` for shared ingestion, embedding, and retrieval logic
+
+## Architecture At A Glance
+
+```text
+PDF -> ingestion pipeline -> chunks -> embeddings -> ChromaDB
+                                           |
+User question -> retrieval -> context assembly -> LLM response stream
+```
+
+The ingestion pipeline loads a PDF, splits it into chunks, generates embeddings with a local ONNX model, and writes vectors into ChromaDB. During chat, relevant chunks are retrieved and passed to the model so responses stay anchored to the indexed document.
+
+## Core Capabilities
+
+- PDF ingestion backed by a shared RAG pipeline
+- Automatic document summary generation after upload
+- Streaming chat responses in the web interface
+- Shared retrieval logic across web and CLI clients
+- Conversation persistence in the browser via `localStorage`
+- Document metadata and summary surfaced alongside chat
+- Release notes exposed in-product from the root `CHANGELOG.md`
+
+## Tech Stack
 
 | Layer | Technology |
 |---|---|
-| Monorepo | pnpm + Turborepo |
-| Web app | Next.js 16, React 19, Tailwind v4 |
-| UI components | shadcn/ui (canary, New York style) |
-| AI / streaming | Vercel AI SDK + Groq (`llama-3.3-70b-versatile`) |
-| Embeddings | HuggingFace `all-MiniLM-L6-v2` via ONNX (runs locally) |
+| Monorepo | `pnpm` workspace + Turborepo |
+| Web app | Next.js 16, React 19, Tailwind CSS v4 |
+| UI | shadcn/ui (canary, New York style) |
+| AI runtime | Vercel AI SDK |
+| Model provider | Groq with `llama-3.3-70b-versatile` |
+| Embeddings | HuggingFace `all-MiniLM-L6-v2` via ONNX |
 | Vector store | ChromaDB |
-| CLI | `@langchain/groq` + `readline` |
+| CLI | Node.js + `readline` + `@langchain/groq` |
 
-## Project Structure
+## Getting Started
 
-```
-parse-pal/
-├── apps/
-│   ├── web/                  # Next.js web app
-│   │   └── app/
-│   │       ├── (public)/     # Public project pages
-│   │       │   ├── about/page.tsx
-│   │       │   └── changelogs/page.tsx
-│   │       ├── app/          # Workspace routes
-│   │       │   ├── layout.tsx
-│   │       │   ├── page.tsx          # /app — upload & welcome
-│   │       │   └── chats/[id]/       # /app/chats/:id — conversation
-│   │       ├── api/
-│   │       │   ├── chat/route.ts    # Streaming chat endpoint
-│   │       │   └── ingest/route.ts  # PDF upload & ingestion endpoint
-│   │       └── components/
-│   │           ├── ChatView.tsx     # Upload, onboarding, details, chat UI
-│   │           └── Sidebar.tsx      # Conversation list + upload CTA
-│   └── cli/                  # Terminal chat interface
-└── packages/
-    └── rag/                  # Shared RAG library
-        ├── embeddings         # HuggingFace ONNX embeddings
-        ├── vectorstore        # ChromaDB helpers
-        └── ingest             # PDF loader, chunker, ingestion
-```
+### Prerequisites
 
-## Prerequisites
-
-**ChromaDB** must be running locally before ingesting or chatting:
+ChromaDB must be running locally before ingestion or chat.
 
 ```bash
-# Using Docker
 docker run -p 8000:8000 chromadb/chroma
 ```
 
-**Environment variables** — create `apps/cli/.env` and/or `apps/web/.env.local`:
+Create environment files for the surfaces you want to run:
+
+- `apps/web/.env.local`
+- `apps/cli/.env`
+
+Minimum required variable:
 
 ```env
 GROQ_API_KEY=your_key_here
 ```
 
-A root `.env.example` is provided as reference.
+The root `.env.example` is included as a reference.
 
-## Getting Started
+### Install And Run
 
 ```bash
-# Install dependencies
 pnpm install
-
-# Start ChromaDB (see Prerequisites above)
-
-# Run the web app
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000), click **Upload a PDF** in the sidebar, and start chatting.
+Then open `http://localhost:3000`.
 
-## Web App Routes
-
-| Route | Description |
-|---|---|
-| `/` | Redirects to `/about` |
-| `/app` | Workspace welcome screen — upload a PDF to begin |
-| `/app/chats/:id` | Conversation page — details view → chat |
-| `/about` | Public project overview and learning context |
-| `/changelogs` | Public release notes sourced from `CHANGELOG.md` |
-| `/new` | Legacy redirect to `/app` |
-| `/chats/:id` | Legacy redirect to `/app/chats/:id` |
-
-## User Flow
-
-```
- /about  →  Open App  →  /app  →  Upload PDF  →  Uploading…  →  Analyzing…
-                               →  /app/chats/:id  →  Onboarding card
-                                                   →  Chat  →  Ask questions
-```
-
-Selecting an existing conversation from the sidebar navigates to `/app/chats/:id` and shows the conversation details page (document info, AI summary, last exchange preview) before resuming the chat.
-
-## CLI Usage
+If you only want the web app:
 
 ```bash
-# Ingest a PDF
-pnpm ingest -- path/to/file.pdf
+pnpm --filter @parse-pal/web dev
+```
 
-# Start interactive chat
+## Usage
+
+### Web App
+
+1. Start the app and open `http://localhost:3000`
+2. Upload a PDF from the app workspace
+3. Wait for ingestion and summary generation
+4. Continue into the chat view and ask document-specific questions
+
+### CLI
+
+```bash
+pnpm ingest -- path/to/file.pdf
 pnpm chat
 ```
 
-A sample PDF is available at `docs/my-document.pdf`.
+A sample document is available at `docs/my-document.pdf`.
 
-## Commands
+## Workspace Structure
 
-```bash
-pnpm dev        # Run web app in development mode
-pnpm build      # Build all packages
-pnpm ingest     # Ingest a PDF via CLI
-pnpm chat       # Start interactive CLI chat
-pnpm release    # Create an interactive root release
+```text
+parse-pal/
+|- apps/
+|  |- web/          # Next.js application
+|  |  |- app/       # App Router routes and route UI
+|  |  \- components/# Shared UI components
+|  \- cli/          # CLI entry points
+|- packages/
+|  \- rag/          # Shared ingestion, embeddings, retrieval, vector store
+|- docs/            # Notes, plans, and reference material
+\- README.md
 ```
 
-## Releases
+## Routes And Commands
+
+### Web Routes
+
+| Route | Purpose |
+|---|---|
+| `/` | Redirect entry point |
+| `/about` | Public overview page |
+| `/app` | Main workspace and upload entry |
+| `/app/chats/:id` | Conversation view for an indexed document |
+| `/changelogs` | Public release notes page |
+
+### Root Commands
+
+| Command | Purpose |
+|---|---|
+| `pnpm dev` | Run the workspace in development mode |
+| `pnpm build` | Build all workspaces |
+| `pnpm ingest` | Run the CLI ingestion flow |
+| `pnpm chat` | Run the CLI chat flow |
+| `pnpm release` | Start an interactive release |
+
+## Implementation Notes
+
+- The current ingestion flow targets one PDF collection at a time and recreates the `pdf_docs` ChromaDB collection on each ingest.
+- Embeddings are generated locally, so no embeddings API key is required.
+- The ONNX model is downloaded on first run.
+- `@parse-pal/rag` is consumed directly from TypeScript source and does not have a separate build step.
+- Web conversation state is stored in `localStorage` under `parse-pal-conversations`.
+
+## Release Workflow
+
+Release automation is managed from the workspace root with `release-it`.
 
 ```bash
 pnpm release
@@ -136,13 +157,4 @@ pnpm release:minor
 pnpm release:major
 ```
 
-The release workflow is managed at the workspace root with `release-it`. It bumps the root `package.json` version, updates `CHANGELOG.md` from Conventional Commit history, creates a release commit, and tags the repo as `v<version>`.
-
-The web app also exposes `/changelogs`, which reads the root `CHANGELOG.md` so release notes are visible in-product, and surfaces the GitHub repository link across the UI for users who want to inspect, clone, or star the project.
-
-## Notes
-
-- **One PDF at a time** — each ingest deletes and recreates the `pdf_docs` ChromaDB collection
-- **Embeddings are local** — no API key needed; the ONNX model downloads on first run
-- **`@parse-pal/rag` has no build step** — source `.ts` files are imported directly via TypeScript path exports
-- **Conversation data** is stored in `localStorage` under the key `parse-pal-conversations`
+The release flow updates the root package version, generates changelog entries from Conventional Commit history, creates the release commit, and tags the repository as `v<version>`.
