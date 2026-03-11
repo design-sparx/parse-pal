@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.3.2](https://github.com/design-sparx/parse-pal/compare/v1.3.1...v1.3.2) (2026-03-11)
+
+### Features
+
+* added dark/light mode toggle ([a13faa3](https://github.com/design-sparx/parse-pal/commit/a13faa34e6aa22e4b3aaff8466243ca639f4febb))
+
 ## 1.3.1 (2026-03-11)
 
 ### Features
