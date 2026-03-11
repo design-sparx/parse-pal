@@ -2,6 +2,8 @@
 
 ## [1.3.3](https://github.com/design-sparx/parse-pal/compare/v1.3.2...v1.3.3) (2026-03-11)
 
+* refactor: added release on each release-it running config ([e192e1e](https://github.com/design-sparx/parse-pal/commit/e192e1e3a84c02bb3a792be4a14693b4f1438643))
+
 ## [1.3.2](https://github.com/design-sparx/parse-pal/compare/v1.3.1...v1.3.2) (2026-03-11)
 
 ### Features
