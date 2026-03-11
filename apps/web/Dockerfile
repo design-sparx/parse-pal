@@ -36,7 +36,7 @@ FROM node:20-bookworm-slim AS runner
 ENV NODE_ENV=production
 ENV HOSTNAME=0.0.0.0
 ENV PORT=3000
-ENV LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:/usr/lib:${LD_LIBRARY_PATH}
+ENV LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:/usr/lib
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
   ca-certificates \
