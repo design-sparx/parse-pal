@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.2](https://github.com/design-sparx/parse-pal/compare/v1.4.1...v1.4.2) (2026-03-11)
+
+### Features
+
+* added docker configuration for railway deployment ([1f7f81e](https://github.com/design-sparx/parse-pal/commit/1f7f81e28e22a206db5785b9ad8e023b44daaa85))
+* added start command to railway.json ([592ad54](https://github.com/design-sparx/parse-pal/commit/592ad5412d81f71a33d9d1eb0988b76e6d7e10f2))
+
 ## [1.4.1](https://github.com/design-sparx/parse-pal/compare/v1.4.0...v1.4.1) (2026-03-11)
 
 ## [1.4.0](https://github.com/design-sparx/parse-pal/compare/v1.3.3...v1.4.0) (2026-03-11)
