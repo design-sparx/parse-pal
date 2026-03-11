@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "turbo dev",
     "build": "turbo build",
+    "docker:build:web": "docker build -f apps/web/Dockerfile -t parse-pal-web-railway-test .",
     "ingest": "turbo ingest",
     "chat": "turbo chat",
     "release": "release-it",
