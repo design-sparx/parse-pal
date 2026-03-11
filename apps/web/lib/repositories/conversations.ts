@@ -73,5 +73,12 @@ export function createServerConversationRepository(sql = getDatabaseClient()) {
 
       return mapConversationRow(rows[0])
     },
+
+    async deleteById(id: string) {
+      await sql`
+        delete from conversations
+        where id = ${id}
+      `
+    },
   }
 }

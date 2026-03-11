@@ -38,3 +38,13 @@ export async function getVectorStore() {
   const embeddings = await createEmbeddings();
   return Chroma.fromExistingCollection(embeddings, getLangChainChromaArgs());
 }
+
+export async function deleteDocumentScope(scope: DocumentScope) {
+  const filter = buildDocumentScopeFilter(scope);
+  if (!filter) return;
+
+  const vectorStore = await getVectorStore();
+  await vectorStore.delete({
+    filter,
+  });
+}

@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useRef, useState } from "react"
 import { useChat } from "ai/react"
 import type { Message } from "ai"
 import { useParams, useRouter } from "next/navigation"
+import { toast } from "sonner"
 import {
   EllipsisVerticalIcon,
   FileTextIcon,
@@ -273,9 +274,26 @@ function ChatRouteShell({ children }: { children: React.ReactNode }) {
   const shouldShowInfoPanel = showInfo && Boolean(conversation?.summary)
 
   function handleDeleteConversation() {
-    deleteConversation(conversationId)
-    setDeleteDialogOpen(false)
-    router.push("/app")
+    void (async () => {
+      const response = await fetch(`/api/conversations/${conversationId}`, {
+        method: "DELETE",
+      })
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null)
+        toast.error(data?.error ?? "Failed to delete conversation.")
+        return
+      }
+
+      const data = await response.json().catch(() => null)
+      if (data?.warnings?.length) {
+        toast.warning(`Conversation deleted with warnings: ${data.warnings.join(" | ")}`)
+      }
+
+      deleteConversation(conversationId)
+      setDeleteDialogOpen(false)
+      router.push("/app")
+    })()
   }
 
   function handleSaveTitle(event: React.FormEvent<HTMLFormElement>) {

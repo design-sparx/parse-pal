@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter, usePathname } from "next/navigation"
+import { toast } from "sonner"
 import { ConversationsProvider, useConversations } from "@/app/hooks/useConversations"
 import { EmptyAppView } from "@/app/components/EmptyAppView"
 import { Sidebar } from "@/app/components/Sidebar"
@@ -19,7 +20,22 @@ function AppShell({ children }: { children: React.ReactNode }) {
   const activeId = pathname.match(/^\/app\/chats\/(.+)$/)?.[1] ?? null
   const showEmptyAppView = isLoaded && conversations.length === 0 && pathname === "/app"
 
-  function handleDelete(id: string) {
+  async function handleDelete(id: string) {
+    const response = await fetch(`/api/conversations/${id}`, {
+      method: "DELETE",
+    })
+
+    if (!response.ok) {
+      const data = await response.json().catch(() => null)
+      toast.error(data?.error ?? "Failed to delete conversation.")
+      return
+    }
+
+    const data = await response.json().catch(() => null)
+    if (data?.warnings?.length) {
+      toast.warning(`Conversation deleted with warnings: ${data.warnings.join(" | ")}`)
+    }
+
     deleteConversation(id)
     if (activeId === id) router.push("/app")
   }

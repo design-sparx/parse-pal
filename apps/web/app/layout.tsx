@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, Space_Grotesk } from "next/font/google";
+import { Toaster } from "sonner";
 import { getThemeInitScript } from "@/lib/theme";
 import "./globals.css";
 
@@ -40,6 +41,7 @@ export default function RootLayout({
         className={`${spaceGrotesk.variable} ${ibmPlexMono.variable} antialiased`}
       >
         {children}
+        <Toaster position="top-right" richColors />
       </body>
     </html>
   );

@@ -130,6 +130,41 @@ export function createServerDocumentRepository(sql = getDatabaseClient()) {
       return rows[0] ? mapDocumentRow(rows[0]) : null
     },
 
+    async getByConversationId(conversationId: string) {
+      const rows = await sql`
+        select
+          id,
+          conversation_id,
+          cloudinary_public_id,
+          cloudinary_url,
+          filename,
+          mime_type,
+          file_size,
+          summary,
+          page_count,
+          chunk_count,
+          created_at
+        from documents
+        where conversation_id = ${conversationId}
+        order by created_at asc
+        limit 1
+      ` as {
+        id: string
+        conversation_id: string
+        cloudinary_public_id: string
+        cloudinary_url: string
+        filename: string
+        mime_type: string
+        file_size: number
+        summary: string | null
+        page_count: number | null
+        chunk_count: number | null
+        created_at: Date | string
+      }[]
+
+      return rows[0] ? mapDocumentRow(rows[0]) : null
+    },
+
     async markReady(input: UpdateDocumentProcessingResultInput) {
       const rows = await sql`
         update documents
