@@ -1,5 +1,7 @@
 # Changelog
 
+## [1.4.1](https://github.com/design-sparx/parse-pal/compare/v1.4.0...v1.4.1) (2026-03-11)
+
 ## [1.4.0](https://github.com/design-sparx/parse-pal/compare/v1.3.3...v1.4.0) (2026-03-11)
 
 ### Features
