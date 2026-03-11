@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.3](https://github.com/design-sparx/parse-pal/compare/v1.4.2...v1.4.3) (2026-03-11)
+
+### Features
+
+* updated deletion flow to delete file and db rows ([ebb347f](https://github.com/design-sparx/parse-pal/commit/ebb347f2f16b8c702477c9466e3d9548623ab86c))
+* updated theme toggle and app version positioning ([cf35abf](https://github.com/design-sparx/parse-pal/commit/cf35abf3d6935a621fc961092a9f443b281864b8))
+
 ## [1.4.2](https://github.com/design-sparx/parse-pal/compare/v1.4.1...v1.4.2) (2026-03-11)
 
 ### Features
