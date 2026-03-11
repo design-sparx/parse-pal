@@ -1,6 +1,6 @@
 "use client"
 
-import { ArrowRightIcon, FileTextIcon } from "lucide-react"
+import { ArrowRightIcon, FileTextIcon, Loader2Icon } from "lucide-react"
 import { useChatRoute } from "@/app/components/ChatRouteFrame"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
@@ -28,6 +28,35 @@ export function ChatConversationView() {
 
   if (!conversation) {
     return <div className="flex flex-1 items-center justify-center px-6 text-sm text-muted-foreground">Chat not found.</div>
+  }
+
+  if (conversation.status === "queued" || conversation.status === "processing") {
+    return (
+      <div className="flex flex-1 items-center justify-center px-6 py-8">
+        <div className="flex w-full max-w-md flex-col items-center gap-4 text-center">
+          <Loader2Icon className="size-8 animate-spin text-muted-foreground" />
+          <div className="space-y-1">
+            <p className="text-sm font-medium">Processing your document…</p>
+            <p className="text-xs text-muted-foreground">
+              ParsePal is chunking, embedding, and preparing your PDF for chat.
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (conversation.status === "failed") {
+    return (
+      <div className="flex flex-1 items-center justify-center px-6 py-8">
+        <div className="flex w-full max-w-md flex-col gap-3 text-center">
+          <p className="text-sm font-medium">Document processing failed.</p>
+          <p className="text-xs text-destructive">
+            {conversation.errorMessage ?? "The ingest job did not complete successfully."}
+          </p>
+        </div>
+      </div>
+    )
   }
 
   if (showDetails) {

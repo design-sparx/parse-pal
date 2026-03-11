@@ -15,12 +15,14 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import type { Conversation } from "@/app/hooks/useConversations"
 
-export type IngestMeta = {
+export type CreatedConversation = {
+  id: string
+  documentId: string
+  ingestJobId: string
   filename: string
   fileSize: string
-  pages: number
-  chunks: number
-  summary: string
+  cloudinaryUrl: string
+  cloudinaryPublicId: string
 }
 
 type IngestState =
@@ -31,7 +33,7 @@ type IngestState =
 
 type Props = {
   conversation: Conversation | null
-  onIngestSuccess: (filename: string, meta: IngestMeta) => void
+  onConversationCreated: (conversation: CreatedConversation) => void
   onMessagesChange: (messages: Message[]) => void
 }
 
@@ -41,49 +43,9 @@ function formatFileSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
-async function fetchSummary(): Promise<string> {
-  const res = await fetch("/api/chat", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      messages: [
-        {
-          role: "user",
-          content:
-            "Give a concise 2-3 sentence summary of this document. What is it about and what are the key topics?",
-        },
-      ],
-    }),
-  })
-
-  if (!res.ok || !res.body) return ""
-
-  const reader = res.body.getReader()
-  const decoder = new TextDecoder()
-  let summary = ""
-  let buffer = ""
-
-  while (true) {
-    const { done, value } = await reader.read()
-    if (done) break
-    buffer += decoder.decode(value, { stream: true })
-    const lines = buffer.split("\n")
-    buffer = lines.pop() ?? ""
-    for (const line of lines) {
-      if (line.startsWith("0:")) {
-        try {
-          summary += JSON.parse(line.slice(2))
-        } catch { }
-      }
-    }
-  }
-
-  return summary.trim()
-}
-
 export function ChatView({
   conversation,
-  onIngestSuccess,
+  onConversationCreated,
   onMessagesChange,
 }: Props) {
   const hasExistingMessages = (conversation?.messages.length ?? 0) > 0
@@ -95,6 +57,10 @@ export function ChatView({
     useChat({
       api: "/api/chat",
       initialMessages: conversation?.messages ?? [],
+      body: {
+        conversationId: conversation?.id,
+        documentId: conversation?.documentId,
+      },
     })
 
   useEffect(() => {
@@ -110,23 +76,62 @@ export function ChatView({
     const fileSize = formatFileSize(file.size)
     setIngest({ status: "uploading" })
 
-    const formData = new FormData()
-    formData.append("file", file)
-
     try {
-      const res = await fetch("/api/ingest", { method: "POST", body: formData })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error)
+      const signRes = await fetch("/api/uploads/sign", { method: "POST" })
+      const signData = await signRes.json()
+      if (!signRes.ok) throw new Error(signData.error)
+
+      const uploadForm = new FormData()
+      uploadForm.append("file", file)
+      uploadForm.append("api_key", signData.apiKey)
+      uploadForm.append("timestamp", String(signData.timestamp))
+      uploadForm.append("signature", signData.signature)
+      uploadForm.append("folder", signData.folder)
+      uploadForm.append("resource_type", signData.resourceType)
+
+      const uploadRes = await fetch(signData.uploadUrl, {
+        method: "POST",
+        body: uploadForm,
+      })
+      const uploadData = await uploadRes.json()
+      if (!uploadRes.ok) throw new Error(uploadData.error?.message ?? "Cloudinary upload failed")
+
+      const conversationRes = await fetch("/api/conversations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: file.name,
+          filename: file.name,
+          mimeType: file.type || "application/pdf",
+          fileSize: file.size,
+          cloudinaryPublicId: uploadData.public_id,
+          cloudinaryUrl: uploadData.secure_url,
+        }),
+      })
+      const conversationData = await conversationRes.json()
+      if (!conversationRes.ok) throw new Error(conversationData.error)
 
       setIngest({ status: "summarizing" })
-      const summary = await fetchSummary()
+      await fetch("/api/ingest", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          conversationId: conversationData.conversation.id,
+          documentId: conversationData.document.id,
+          ingestJobId: conversationData.ingestJob.id,
+          cloudinaryUrl: conversationData.document.cloudinaryUrl,
+          filename: conversationData.document.filename,
+        }),
+      })
 
-      onIngestSuccess(file.name, {
-        filename: data.filename,
+      onConversationCreated({
+        id: conversationData.conversation.id,
+        documentId: conversationData.document.id,
+        ingestJobId: conversationData.ingestJob.id,
+        filename: conversationData.document.filename,
         fileSize,
-        pages: data.pages,
-        chunks: data.chunks,
-        summary,
+        cloudinaryUrl: conversationData.document.cloudinaryUrl,
+        cloudinaryPublicId: conversationData.document.cloudinaryPublicId,
       })
     } catch (err) {
       setIngest({ status: "error", message: (err as Error).message })
@@ -279,7 +284,7 @@ export function ChatView({
             <Input
               value={input}
               onChange={handleInputChange}
-              disabled={isLoading}
+              disabled={isLoading || conversation?.status !== "ready"}
               placeholder="Ask a question…"
               aria-label="Ask a question about your document"
               autoComplete="off"
@@ -288,7 +293,7 @@ export function ChatView({
             />
             <Button
               type="submit"
-              disabled={isLoading || !input.trim()}
+              disabled={isLoading || conversation?.status !== "ready" || !input.trim()}
               size="icon"
               aria-label="Send message"
             >

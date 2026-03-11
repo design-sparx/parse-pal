@@ -2,7 +2,8 @@ import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import { Chroma } from "@langchain/community/vectorstores/chroma";
 import { createEmbeddings } from "./embeddings";
-import { COLLECTION_NAME, createChromaClient, getLangChainChromaArgs } from "./chroma-config";
+import { getLangChainChromaArgs } from "./chroma-config";
+import { addDocumentScopeToMetadata, type DocumentScope } from "./vectorstore";
 
 type PrimitiveMetadata = Record<string, string | number | boolean | null>;
 
@@ -14,7 +15,7 @@ function sanitizeMetadata(metadata: Record<string, unknown>): PrimitiveMetadata 
   ) as PrimitiveMetadata;
 }
 
-export async function ingestPDF(filePath: string) {
+export async function ingestPDF(filePath: string, scope: DocumentScope = {}) {
   const loader = new PDFLoader(filePath);
   const docs = await loader.load();
 
@@ -26,19 +27,16 @@ export async function ingestPDF(filePath: string) {
 
   const chunks = rawChunks.map((doc) => ({
     ...doc,
-    metadata: sanitizeMetadata(doc.metadata),
+    metadata: addDocumentScopeToMetadata(sanitizeMetadata(doc.metadata), scope),
   }));
-
-  // Clear existing collection
-  const client = createChromaClient();
-  try {
-    await client.deleteCollection({ name: COLLECTION_NAME });
-  } catch {
-    // Didn't exist yet
-  }
+  const previewText = chunks
+    .slice(0, 3)
+    .map((chunk) => chunk.pageContent)
+    .join("\n\n")
+    .slice(0, 4000);
 
   const embeddings = createEmbeddings();
   await Chroma.fromDocuments(chunks, embeddings, getLangChainChromaArgs());
 
-  return { pages: docs.length, chunks: chunks.length };
+  return { pages: docs.length, chunks: chunks.length, previewText };
 }

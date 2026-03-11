@@ -64,6 +64,7 @@ type ChatRouteContextValue = {
   handleSubmit: (event?: React.FormEvent<HTMLFormElement>) => void
   deleteConversation: (id: string) => void
   updateConversationTitle: (id: string, title: string) => void
+  updateConversation: (id: string, updates: Partial<NonNullable<ChatRouteContextValue["conversation"]>>) => void
 }
 
 const ChatRouteContext = createContext<ChatRouteContextValue | null>(null)
@@ -84,6 +85,7 @@ function ChatRouteProviderInner({
   conversation,
   deleteConversation,
   updateConversationTitle,
+  updateConversation,
   saveMessages,
 }: {
   children: React.ReactNode
@@ -91,6 +93,7 @@ function ChatRouteProviderInner({
   conversation: NonNullable<ChatRouteContextValue["conversation"]>
   deleteConversation: ReturnType<typeof useConversations>["deleteConversation"]
   updateConversationTitle: ReturnType<typeof useConversations>["updateConversationTitle"]
+  updateConversation: ReturnType<typeof useConversations>["updateConversation"]
   saveMessages: ReturnType<typeof useConversations>["saveMessages"]
 }) {
   const hasExistingMessages = conversation.messages.length > 0
@@ -101,6 +104,10 @@ function ChatRouteProviderInner({
   const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
     api: "/api/chat",
     initialMessages: conversation.messages,
+    body: {
+      conversationId,
+      documentId: conversation.documentId,
+    },
   })
 
   useEffect(() => {
@@ -108,6 +115,44 @@ function ChatRouteProviderInner({
       saveMessages(conversationId, messages)
     }
   }, [conversationId, isLoading, messages, saveMessages])
+
+  useEffect(() => {
+    if (!conversation.ingestJobId || !conversation.documentId) return
+    if (conversation.status !== "queued" && conversation.status !== "processing") return
+
+    const controller = new AbortController()
+    const interval = window.setInterval(async () => {
+      try {
+        const response = await fetch(
+          `/api/conversations/${conversationId}/status?documentId=${conversation.documentId}&ingestJobId=${conversation.ingestJobId}`,
+          {
+            signal: controller.signal,
+          }
+        )
+        if (!response.ok) return
+
+        const data = await response.json()
+        updateConversation(conversationId, {
+          status: data.conversation.status,
+          summary: data.document?.summary ?? undefined,
+          pages: data.document?.pageCount ?? undefined,
+          chunks: data.document?.chunkCount ?? undefined,
+          errorMessage: data.ingestJob?.errorMessage ?? undefined,
+        })
+
+        if (data.conversation.status === "ready" || data.conversation.status === "failed") {
+          window.clearInterval(interval)
+        }
+      } catch {
+        window.clearInterval(interval)
+      }
+    }, 3000)
+
+    return () => {
+      controller.abort()
+      window.clearInterval(interval)
+    }
+  }, [conversation, conversation.documentId, conversation.id, conversation.ingestJobId, conversation.status, conversationId, updateConversation])
 
   return (
     <ChatRouteContext.Provider
@@ -128,6 +173,7 @@ function ChatRouteProviderInner({
         handleSubmit,
         deleteConversation,
         updateConversationTitle,
+        updateConversation,
       }}
     >
       {children}
@@ -142,6 +188,7 @@ function ChatRouteProvider({ children }: { children: React.ReactNode }) {
     isLoaded,
     deleteConversation,
     updateConversationTitle,
+    updateConversation,
     saveMessages,
   } = useConversations()
   const conversation = conversations.find((item) => item.id === id) ?? null
@@ -166,6 +213,7 @@ function ChatRouteProvider({ children }: { children: React.ReactNode }) {
           handleSubmit: () => undefined,
           deleteConversation: () => undefined,
           updateConversationTitle: () => undefined,
+          updateConversation: () => undefined,
         }}
       >
         {children}
@@ -180,6 +228,7 @@ function ChatRouteProvider({ children }: { children: React.ReactNode }) {
       conversation={conversation}
       deleteConversation={deleteConversation}
       updateConversationTitle={updateConversationTitle}
+      updateConversation={updateConversation}
       saveMessages={saveMessages}
     >
       {children}
@@ -216,7 +265,11 @@ function ChatRouteShell({ children }: { children: React.ReactNode }) {
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [draftTitle, setDraftTitle] = useState(conversation?.title ?? "")
 
-  const shouldShowComposer = isLoaded && Boolean(conversation) && !showDetails
+  const shouldShowComposer =
+    isLoaded &&
+    Boolean(conversation) &&
+    !showDetails &&
+    conversation?.status === "ready"
   const shouldShowInfoPanel = showInfo && Boolean(conversation?.summary)
 
   function handleDeleteConversation() {

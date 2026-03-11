@@ -80,6 +80,15 @@ CHROMA_TENANT=your_chroma_tenant
 CHROMA_DATABASE=your_chroma_database
 ```
 
+For hosted async ingest, add Neon and Cloudinary:
+
+```env
+DATABASE_URL=your_neon_connection_string
+CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+CLOUDINARY_API_KEY=your_cloudinary_api_key
+CLOUDINARY_API_SECRET=your_cloudinary_api_secret
+```
+
 The root `.env.example` is included as a reference.
 
 ### Install And Run
@@ -157,6 +166,7 @@ parse-pal/
 - The current ingestion flow targets one PDF collection at a time and recreates the `pdf_docs` ChromaDB collection on each ingest.
 - Local development defaults to `CHROMA_URL=http://localhost:8000`.
 - If `CHROMA_API_KEY`, `CHROMA_TENANT`, and `CHROMA_DATABASE` are all set, ParsePal connects to Chroma Cloud instead of the local Chroma instance.
+- Hosted async ingest requires Neon for job state and Cloudinary for PDF storage.
 - Embeddings are generated locally, so no embeddings API key is required.
 - The ONNX model is downloaded on first run.
 - `@parse-pal/rag` is consumed directly from TypeScript source and does not have a separate build step.

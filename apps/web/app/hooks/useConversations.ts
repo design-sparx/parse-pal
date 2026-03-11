@@ -15,6 +15,12 @@ export type Conversation = {
   id: string
   title: string
   docName: string
+  status?: "queued" | "processing" | "ready" | "failed"
+  documentId?: string
+  ingestJobId?: string
+  cloudinaryUrl?: string
+  cloudinaryPublicId?: string
+  errorMessage?: string
   fileSize?: string
   pages?: number
   chunks?: number
@@ -46,8 +52,21 @@ type ConversationsContextValue = {
   isLoaded: boolean
   createConversation: (
     docName: string,
-    meta?: { fileSize: string; pages: number; chunks: number; summary: string }
+    meta?: {
+      id?: string
+      status?: "queued" | "processing" | "ready" | "failed"
+      documentId?: string
+      ingestJobId?: string
+      cloudinaryUrl?: string
+      cloudinaryPublicId?: string
+      fileSize?: string
+      pages?: number
+      chunks?: number
+      summary?: string
+      errorMessage?: string
+    }
   ) => string
+  updateConversation: (id: string, updates: Partial<Conversation>) => void
   saveMessages: (id: string, messages: Message[]) => void
   deleteConversation: (id: string) => void
   updateConversationTitle: (id: string, title: string) => void
@@ -75,13 +94,31 @@ function ConversationsProviderImpl({ children }: { children: React.ReactNode }) 
   const createConversation = useCallback(
     (
       docName: string,
-      meta?: { fileSize: string; pages: number; chunks: number; summary: string }
+      meta?: {
+        id?: string
+        status?: "queued" | "processing" | "ready" | "failed"
+        documentId?: string
+        ingestJobId?: string
+        cloudinaryUrl?: string
+        cloudinaryPublicId?: string
+        fileSize?: string
+        pages?: number
+        chunks?: number
+        summary?: string
+        errorMessage?: string
+      }
     ): string => {
-      const id = crypto.randomUUID()
+      const id = meta?.id ?? crypto.randomUUID()
       const conv: Conversation = {
         id,
         title: docName,
         docName,
+        status: meta?.status ?? "ready",
+        documentId: meta?.documentId,
+        ingestJobId: meta?.ingestJobId,
+        cloudinaryUrl: meta?.cloudinaryUrl,
+        cloudinaryPublicId: meta?.cloudinaryPublicId,
+        errorMessage: meta?.errorMessage,
         ...meta,
         createdAt: Date.now(),
         messages: [],
@@ -96,6 +133,18 @@ function ConversationsProviderImpl({ children }: { children: React.ReactNode }) 
     },
     []
   )
+
+  const updateConversation = useCallback((id: string, updates: Partial<Conversation>) => {
+    setConversations((prev) => {
+      const next = prev.map((conversation) =>
+        conversation.id === id
+          ? { ...conversation, ...updates }
+          : conversation
+      )
+      save(next)
+      return next
+    })
+  }, [])
 
   const saveMessages = useCallback((id: string, messages: Message[]) => {
     setConversations((prev) => {
@@ -150,6 +199,7 @@ function ConversationsProviderImpl({ children }: { children: React.ReactNode }) 
       active,
       isLoaded,
       createConversation,
+      updateConversation,
       saveMessages,
       deleteConversation,
       updateConversationTitle,
@@ -161,6 +211,7 @@ function ConversationsProviderImpl({ children }: { children: React.ReactNode }) 
       active,
       isLoaded,
       createConversation,
+      updateConversation,
       saveMessages,
       deleteConversation,
       updateConversationTitle,

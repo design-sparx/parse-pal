@@ -2,21 +2,29 @@
 
 import { useRouter } from "next/navigation"
 import { useConversations } from "@/app/hooks/useConversations"
-import { ChatView, type IngestMeta } from "@/app/components/ChatView"
+import { ChatView, type CreatedConversation } from "@/app/components/ChatView"
 
 export default function AppHomePage() {
   const router = useRouter()
   const { createConversation } = useConversations()
 
-  function handleIngestSuccess(filename: string, meta: IngestMeta) {
-    const id = createConversation(filename, meta)
+  function handleConversationCreated(conversation: CreatedConversation) {
+    const id = createConversation(conversation.filename, {
+      id: conversation.id,
+      status: "processing",
+      documentId: conversation.documentId,
+      ingestJobId: conversation.ingestJobId,
+      cloudinaryUrl: conversation.cloudinaryUrl,
+      cloudinaryPublicId: conversation.cloudinaryPublicId,
+      fileSize: conversation.fileSize,
+    })
     router.push(`/app/chats/${id}`)
   }
 
   return (
     <ChatView
       conversation={null}
-      onIngestSuccess={handleIngestSuccess}
+      onConversationCreated={handleConversationCreated}
       onMessagesChange={() => {}}
     />
   )
