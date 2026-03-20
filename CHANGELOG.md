@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.4.5](https://github.com/design-sparx/parse-pal/compare/v1.4.4...v1.4.5) (2026-03-20)
+
+### Features
+
+* **ui:** standardize import formatting and add AI mistakes notice in composer ([67631c1](https://github.com/design-sparx/parse-pal/commit/67631c1e12feb410703553ba90fde1bb329fa117))
+
 ## [1.4.4](https://github.com/design-sparx/parse-pal/compare/v1.4.3...v1.4.4) (2026-03-20)
 
 ### Features
