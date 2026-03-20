@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.4.4](https://github.com/design-sparx/parse-pal/compare/v1.4.3...v1.4.4) (2026-03-20)
+
+### Features
+
+* **ui:** add AI mistakes disclaimer ([b4d3001](https://github.com/design-sparx/parse-pal/commit/b4d300128da74fb79a2b722856d5841bf69e75d0))
+
 ## [1.4.3](https://github.com/design-sparx/parse-pal/compare/v1.4.2...v1.4.3) (2026-03-11)
 
 ### Features
