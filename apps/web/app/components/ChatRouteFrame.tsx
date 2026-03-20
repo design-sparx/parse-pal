@@ -1,21 +1,21 @@
 "use client"
 
-import { createContext, useContext, useEffect, useRef, useState } from "react"
-import { useChat } from "ai/react"
-import type { Message } from "ai"
-import { useParams, useRouter } from "next/navigation"
-import { toast } from "sonner"
+import {createContext, useContext, useEffect, useRef, useState} from "react"
+import {useChat} from "ai/react"
+import type {Message} from "ai"
+import {useParams, useRouter} from "next/navigation"
+import {toast} from "sonner"
 import {
   EllipsisVerticalIcon,
   FileTextIcon,
-  PencilLineIcon,
   PanelRightCloseIcon,
   PanelRightIcon,
+  PencilLineIcon,
   SendIcon,
   Trash2Icon,
   XIcon,
 } from "lucide-react"
-import { useConversations } from "@/app/hooks/useConversations"
+import {useConversations} from "@/app/hooks/useConversations"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,7 +26,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Button } from "@/components/ui/button"
+import {Button} from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
@@ -42,11 +42,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { MarkdownContent } from "@/app/components/MarkdownContent"
-import { ThinkingBubble } from "@/app/components/ThinkingBubble"
-import { Input } from "@/components/ui/input"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Separator } from "@/components/ui/separator"
+import {MarkdownContent} from "@/app/components/MarkdownContent"
+import {ThinkingBubble} from "@/app/components/ThinkingBubble"
+import {Input} from "@/components/ui/input"
+import {ScrollArea} from "@/components/ui/scroll-area"
+import {Separator} from "@/components/ui/separator"
+import {AiMistakesNotice} from "@/app/components/AiMistakesNotice";
 
 type ChatRouteContextValue = {
   conversationId: string
@@ -76,19 +77,19 @@ function formatMeta(conversation: NonNullable<ChatRouteContextValue["conversatio
     conversation.pages && `${conversation.pages} pages`,
     conversation.chunks && `${conversation.chunks} chunks`,
   ]
-    .filter(Boolean)
-    .join(" · ")
+      .filter(Boolean)
+      .join(" · ")
 }
 
 function ChatRouteProviderInner({
-  children,
-  conversationId,
-  conversation,
-  deleteConversation,
-  updateConversationTitle,
-  updateConversation,
-  saveMessages,
-}: {
+                                  children,
+                                  conversationId,
+                                  conversation,
+                                  deleteConversation,
+                                  updateConversationTitle,
+                                  updateConversation,
+                                  saveMessages,
+                                }: {
   children: React.ReactNode
   conversationId: string
   conversation: NonNullable<ChatRouteContextValue["conversation"]>
@@ -102,7 +103,7 @@ function ChatRouteProviderInner({
   const [showDetails, setShowDetails] = useState(hasExistingMessages)
   const [showInfo, setShowInfo] = useState(true)
 
-  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
+  const {messages, input, handleInputChange, handleSubmit, isLoading} = useChat({
     api: "/api/chat",
     initialMessages: conversation.messages,
     body: {
@@ -125,10 +126,10 @@ function ChatRouteProviderInner({
     const interval = window.setInterval(async () => {
       try {
         const response = await fetch(
-          `/api/conversations/${conversationId}/status?documentId=${conversation.documentId}&ingestJobId=${conversation.ingestJobId}`,
-          {
-            signal: controller.signal,
-          }
+            `/api/conversations/${conversationId}/status?documentId=${conversation.documentId}&ingestJobId=${conversation.ingestJobId}`,
+            {
+              signal: controller.signal,
+            }
         )
         if (!response.ok) return
 
@@ -156,34 +157,34 @@ function ChatRouteProviderInner({
   }, [conversation, conversation.documentId, conversation.id, conversation.ingestJobId, conversation.status, conversationId, updateConversation])
 
   return (
-    <ChatRouteContext.Provider
-      value={{
-        conversationId,
-        conversation,
-        isLoaded: true,
-        messages,
-        input,
-        isLoading,
-        showInfo,
-        showDetails,
-        isActive,
-        setShowInfo,
-        setShowDetails,
-        setIsActive,
-        handleInputChange,
-        handleSubmit,
-        deleteConversation,
-        updateConversationTitle,
-        updateConversation,
-      }}
-    >
-      {children}
-    </ChatRouteContext.Provider>
+      <ChatRouteContext.Provider
+          value={{
+            conversationId,
+            conversation,
+            isLoaded: true,
+            messages,
+            input,
+            isLoading,
+            showInfo,
+            showDetails,
+            isActive,
+            setShowInfo,
+            setShowDetails,
+            setIsActive,
+            handleInputChange,
+            handleSubmit,
+            deleteConversation,
+            updateConversationTitle,
+            updateConversation,
+          }}
+      >
+        {children}
+      </ChatRouteContext.Provider>
   )
 }
 
-function ChatRouteProvider({ children }: { children: React.ReactNode }) {
-  const { id } = useParams<{ id: string }>()
+function ChatRouteProvider({children}: { children: React.ReactNode }) {
+  const {id} = useParams<{ id: string }>()
   const {
     conversations,
     isLoaded,
@@ -196,44 +197,44 @@ function ChatRouteProvider({ children }: { children: React.ReactNode }) {
 
   if (!isLoaded || !conversation) {
     return (
-      <ChatRouteContext.Provider
-        value={{
-          conversationId: id,
-          conversation,
-          isLoaded,
-          messages: [],
-          input: "",
-          isLoading: false,
-          showInfo: false,
-          showDetails: false,
-          isActive: false,
-          setShowInfo: () => undefined,
-          setShowDetails: () => undefined,
-          setIsActive: () => undefined,
-          handleInputChange: () => undefined,
-          handleSubmit: () => undefined,
-          deleteConversation: () => undefined,
-          updateConversationTitle: () => undefined,
-          updateConversation: () => undefined,
-        }}
-      >
-        {children}
-      </ChatRouteContext.Provider>
+        <ChatRouteContext.Provider
+            value={{
+              conversationId: id,
+              conversation,
+              isLoaded,
+              messages: [],
+              input: "",
+              isLoading: false,
+              showInfo: false,
+              showDetails: false,
+              isActive: false,
+              setShowInfo: () => undefined,
+              setShowDetails: () => undefined,
+              setIsActive: () => undefined,
+              handleInputChange: () => undefined,
+              handleSubmit: () => undefined,
+              deleteConversation: () => undefined,
+              updateConversationTitle: () => undefined,
+              updateConversation: () => undefined,
+            }}
+        >
+          {children}
+        </ChatRouteContext.Provider>
     )
   }
 
   return (
-    <ChatRouteProviderInner
-      key={conversation.id}
-      conversationId={id}
-      conversation={conversation}
-      deleteConversation={deleteConversation}
-      updateConversationTitle={updateConversationTitle}
-      updateConversation={updateConversation}
-      saveMessages={saveMessages}
-    >
-      {children}
-    </ChatRouteProviderInner>
+      <ChatRouteProviderInner
+          key={conversation.id}
+          conversationId={id}
+          conversation={conversation}
+          deleteConversation={deleteConversation}
+          updateConversationTitle={updateConversationTitle}
+          updateConversation={updateConversation}
+          saveMessages={saveMessages}
+      >
+        {children}
+      </ChatRouteProviderInner>
   )
 }
 
@@ -246,7 +247,7 @@ export function useChatRoute() {
   return context
 }
 
-function ChatRouteShell({ children }: { children: React.ReactNode }) {
+function ChatRouteShell({children}: { children: React.ReactNode }) {
   const router = useRouter()
   const {
     conversation,
@@ -267,10 +268,10 @@ function ChatRouteShell({ children }: { children: React.ReactNode }) {
   const [draftTitle, setDraftTitle] = useState(conversation?.title ?? "")
 
   const shouldShowComposer =
-    isLoaded &&
-    Boolean(conversation) &&
-    !showDetails &&
-    conversation?.status === "ready"
+      isLoaded &&
+      Boolean(conversation) &&
+      !showDetails &&
+      conversation?.status === "ready"
   const shouldShowInfoPanel = showInfo && Boolean(conversation?.summary)
 
   function handleDeleteConversation() {
@@ -303,255 +304,259 @@ function ChatRouteShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <>
-    <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-      <div className="flex flex-1 min-h-0 min-w-0 overflow-hidden">
-        <div className="flex flex-1 min-h-0 min-w-0 overflow-hidden">
-          <div className="flex flex-1 min-h-0 min-w-0 flex-col overflow-hidden">
-            <div className="flex items-center justify-between border-b border-border px-6 py-3 shrink-0">
-            <div className="min-w-0">
-              <h2 className="truncate text-sm font-semibold">
-                {conversation ? conversation.title : "Chat"}
-              </h2>
-            </div>
-              <div className="flex items-center gap-1">
-                {conversation?.summary && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setShowInfo((value) => !value)}
-                    title={showInfo ? "Hide document info" : "Show document info"}
-                    aria-label={showInfo ? "Hide document info" : "Show document info"}
-                  >
-                    {showInfo ? (
-                      <PanelRightCloseIcon className="size-4" />
-                    ) : (
-                      <PanelRightIcon className="size-4" />
-                    )}
-                  </Button>
-                )}
-
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      title="Conversation actions"
-                      aria-label="Conversation actions"
-                    >
-                      <EllipsisVerticalIcon className="size-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem
-                      onSelect={() => {
-                        setDraftTitle(conversation?.title ?? "")
-                        setEditDialogOpen(true)
-                      }}
-                    >
-                      <PencilLineIcon className="size-4" />
-                      Edit title
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      variant="destructive"
-                      onSelect={() => setDeleteDialogOpen(true)}
-                    >
-                      <Trash2Icon className="size-4" />
-                      Delete conversation
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </div>
-
+      <>
+        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <div className="flex flex-1 min-h-0 min-w-0 overflow-hidden">
             <div className="flex flex-1 min-h-0 min-w-0 overflow-hidden">
               <div className="flex flex-1 min-h-0 min-w-0 flex-col overflow-hidden">
-                {children}
-              </div>
+                <div className="flex items-center justify-between border-b border-border px-6 py-3 shrink-0">
+                  <div className="min-w-0">
+                    <h2 className="truncate text-sm font-semibold">
+                      {conversation ? conversation.title : "Chat"}
+                    </h2>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    {conversation?.summary && (
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setShowInfo((value) => !value)}
+                            title={showInfo ? "Hide document info" : "Show document info"}
+                            aria-label={showInfo ? "Hide document info" : "Show document info"}
+                        >
+                          {showInfo ? (
+                              <PanelRightCloseIcon className="size-4"/>
+                          ) : (
+                              <PanelRightIcon className="size-4"/>
+                          )}
+                        </Button>
+                    )}
 
-              {shouldShowInfoPanel && conversation && (
-                <aside className="flex w-72 shrink-0 flex-col border-l border-border">
-                  <div className="flex items-center justify-between border-b border-border px-4 py-3 shrink-0">
-                    <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                      Document
-                    </span>
-                    <button
-                      onClick={() => setShowInfo(false)}
-                      className="text-muted-foreground transition-colors hover:text-foreground"
-                      title="Close"
-                      aria-label="Close document info"
-                    >
-                      <XIcon className="size-3.5" />
-                    </button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            title="Conversation actions"
+                            aria-label="Conversation actions"
+                        >
+                          <EllipsisVerticalIcon className="size-4"/>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                            onSelect={() => {
+                              setDraftTitle(conversation?.title ?? "")
+                              setEditDialogOpen(true)
+                            }}
+                        >
+                          <PencilLineIcon className="size-4"/>
+                          Edit title
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator/>
+                        <DropdownMenuItem
+                            variant="destructive"
+                            onSelect={() => setDeleteDialogOpen(true)}
+                        >
+                          <Trash2Icon className="size-4"/>
+                          Delete conversation
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+
+                <div className="flex flex-1 min-h-0 min-w-0 overflow-hidden">
+                  <div className="flex flex-1 min-h-0 min-w-0 flex-col overflow-hidden">
+                    {children}
                   </div>
 
-                  <ScrollArea className="flex-1 min-h-0">
-                    <div className="flex flex-col gap-4 p-4">
-                      <div className="flex items-start gap-3">
-                        <div className="rounded-md bg-muted p-1.5 shrink-0">
-                          <FileTextIcon className="size-4 text-muted-foreground" />
+                  {shouldShowInfoPanel && conversation && (
+                      <aside className="flex w-72 shrink-0 flex-col border-l border-border">
+                        <div className="flex items-center justify-between border-b border-border px-4 py-3 shrink-0">
+                    <span
+                        className="font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                      Document
+                    </span>
+                          <button
+                              onClick={() => setShowInfo(false)}
+                              className="text-muted-foreground transition-colors hover:text-foreground"
+                              title="Close"
+                              aria-label="Close document info"
+                          >
+                            <XIcon className="size-3.5"/>
+                          </button>
                         </div>
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-medium">{conversation.docName}</p>
-                          <p className="mt-0.5 font-mono text-[11px] text-muted-foreground">
-                            {formatMeta(conversation)}
-                          </p>
-                        </div>
-                      </div>
 
-                      <Separator />
+                        <ScrollArea className="flex-1 min-h-0">
+                          <div className="flex flex-col gap-4 p-4">
+                            <div className="flex items-start gap-3">
+                              <div className="rounded-md bg-muted p-1.5 shrink-0">
+                                <FileTextIcon className="size-4 text-muted-foreground"/>
+                              </div>
+                              <div className="min-w-0">
+                                <p className="truncate text-sm font-medium">{conversation.docName}</p>
+                                <p className="mt-0.5 font-mono text-[11px] text-muted-foreground">
+                                  {formatMeta(conversation)}
+                                </p>
+                              </div>
+                            </div>
 
-                      <div className="flex flex-col gap-2">
-                        <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                          AI Summary
+                            <Separator/>
+
+                            <div className="flex flex-col gap-2">
+                              <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                                AI Summary
+                              </p>
+                              <p className="text-sm leading-relaxed text-foreground">
+                                {conversation.summary}
+                              </p>
+                            </div>
+                          </div>
+                        </ScrollArea>
+                      </aside>
+                  )}
+                </div>
+
+                {shouldShowComposer && (
+                    <div className="border-t border-border px-6 py-4 shrink-0">
+                      <form onSubmit={handleSubmit} className="mx-auto flex max-w-3xl gap-2">
+                        <Input
+                            value={input}
+                            onChange={handleInputChange}
+                            disabled={isLoading}
+                            placeholder="Ask a question…"
+                            aria-label="Ask a question about your document"
+                            autoComplete="off"
+                            className="flex-1"
+                            name="prompt"
+                        />
+                        <Button
+                            type="submit"
+                            disabled={isLoading || !input.trim()}
+                            size="icon"
+                            aria-label="Send message"
+                        >
+                          <SendIcon/>
+                        </Button>
+                      </form>
+                      <div className="flex gap-sm mt-2 justify-center">
+                        <p className="text-[11px] text-muted-foreground mr-4">
+                          Markdown supported: tables, lists, code.
                         </p>
-                        <p className="text-sm leading-relaxed text-foreground">
-                          {conversation.summary}
-                        </p>
+                        <AiMistakesNotice/>
                       </div>
                     </div>
-                  </ScrollArea>
-                </aside>
-              )}
+                )}
+              </div>
             </div>
 
-            {shouldShowComposer && (
-              <div className="border-t border-border px-6 py-4 shrink-0">
-                <form onSubmit={handleSubmit} className="mx-auto flex max-w-3xl gap-2">
-                  <Input
-                    value={input}
-                    onChange={handleInputChange}
-                    disabled={isLoading}
-                    placeholder="Ask a question…"
-                    aria-label="Ask a question about your document"
-                    autoComplete="off"
-                    className="flex-1"
-                    name="prompt"
-                  />
-                  <Button
-                    type="submit"
-                    disabled={isLoading || !input.trim()}
-                    size="icon"
-                    aria-label="Send message"
-                  >
-                    <SendIcon />
-                  </Button>
-                </form>
-                <p className="mx-auto mt-2 max-w-3xl text-[11px] text-muted-foreground">
-                  Markdown supported: tables, lists, code
-                </p>
-              </div>
-            )}
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete conversation?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will permanently remove
+                  {conversation ? ` "${conversation.title}"` : " this conversation"}
+                  {" "}from your local history.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDeleteConversation}>
+                  Delete conversation
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
           </div>
-        </div>
-
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete conversation?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will permanently remove
-              {conversation ? ` "${conversation.title}"` : " this conversation"}
-              {" "}from your local history.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteConversation}>
-              Delete conversation
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </div>
-    </AlertDialog>
-      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit conversation title</DialogTitle>
-            <DialogDescription>
-              Update the title shown in the chat header and sidebar.
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleSaveTitle} className="flex flex-col gap-4">
-            <Input
-              value={draftTitle}
-              onChange={(event) => setDraftTitle(event.target.value)}
-              placeholder="Enter a conversation title"
-              aria-label="Conversation title"
-              autoFocus
-            />
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  setDraftTitle(conversation?.title ?? "")
-                  setEditDialogOpen(false)
-                }}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={!draftTitle.trim()}>
-                Save title
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-    </>
+        </AlertDialog>
+        <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit conversation title</DialogTitle>
+              <DialogDescription>
+                Update the title shown in the chat header and sidebar.
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleSaveTitle} className="flex flex-col gap-4">
+              <Input
+                  value={draftTitle}
+                  onChange={(event) => setDraftTitle(event.target.value)}
+                  placeholder="Enter a conversation title"
+                  aria-label="Conversation title"
+                  autoFocus
+              />
+              <DialogFooter>
+                <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setDraftTitle(conversation?.title ?? "")
+                      setEditDialogOpen(false)
+                    }}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={!draftTitle.trim()}>
+                  Save title
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+      </>
   )
 }
 
-export function ChatRouteFrame({ children }: { children: React.ReactNode }) {
+export function ChatRouteFrame({children}: { children: React.ReactNode }) {
   return (
-    <ChatRouteProvider>
-      <ChatRouteShell>{children}</ChatRouteShell>
-    </ChatRouteProvider>
+      <ChatRouteProvider>
+        <ChatRouteShell>{children}</ChatRouteShell>
+      </ChatRouteProvider>
   )
 }
 
 export function ChatMessagesView() {
-  const { messages, isLoading } = useChatRoute()
+  const {messages, isLoading} = useChatRoute()
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" })
+    bottomRef.current?.scrollIntoView({behavior: "smooth"})
   }, [isLoading, messages])
 
   return (
-    <ScrollArea className="flex-1 min-h-0">
-      <div className="mx-auto flex max-w-3xl flex-col gap-4 px-6 py-4">
-        {messages.length === 0 && (
-          <div className="flex items-center justify-center py-24 text-center text-sm text-muted-foreground">
-            Ask anything about your document
-          </div>
-        )}
-        {messages.map((message) => (
-          <div
-            key={message.id}
-            className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
-          >
-            <div
-              className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm ${message.role === "user"
-                ? "rounded-br-sm bg-primary text-primary-foreground"
-                : "rounded-bl-sm bg-muted text-foreground"
-                }`}
-            >
-              <MarkdownContent
-                content={message.content}
-                enableLinkPreviews
-                className={message.role === "user" ? "[&_code]:bg-primary-foreground/15 [&_pre]:border-primary-foreground/20 [&_pre]:bg-primary-foreground/10 [&_table]:min-w-[20rem] [&_thead]:bg-primary-foreground/10" : ""}
-              />
-            </div>
-          </div>
-        ))}
-        {isLoading && (
-          <div className="flex justify-start">
-            <ThinkingBubble />
-          </div>
-        )}
-        <div ref={bottomRef} />
-      </div>
-    </ScrollArea>
+      <ScrollArea className="flex-1 min-h-0">
+        <div className="mx-auto flex max-w-3xl flex-col gap-4 px-6 py-4">
+          {messages.length === 0 && (
+              <div className="flex items-center justify-center py-24 text-center text-sm text-muted-foreground">
+                Ask anything about your document
+              </div>
+          )}
+          {messages.map((message) => (
+              <div
+                  key={message.id}
+                  className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
+              >
+                <div
+                    className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm ${message.role === "user"
+                        ? "rounded-br-sm bg-primary text-primary-foreground"
+                        : "rounded-bl-sm bg-muted text-foreground"
+                    }`}
+                >
+                  <MarkdownContent
+                      content={message.content}
+                      enableLinkPreviews
+                      className={message.role === "user" ? "[&_code]:bg-primary-foreground/15 [&_pre]:border-primary-foreground/20 [&_pre]:bg-primary-foreground/10 [&_table]:min-w-[20rem] [&_thead]:bg-primary-foreground/10" : ""}
+                  />
+                </div>
+              </div>
+          ))}
+          {isLoading && (
+              <div className="flex justify-start">
+                <ThinkingBubble/>
+              </div>
+          )}
+          <div ref={bottomRef}/>
+        </div>
+      </ScrollArea>
   )
 }
