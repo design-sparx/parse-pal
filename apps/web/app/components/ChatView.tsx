@@ -11,6 +11,7 @@ import {
   CheckCircle2Icon,
   ArrowRightIcon,
 } from "lucide-react"
+import { AiMistakesNotice } from "@/app/components/AiMistakesNotice"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import type { Conversation } from "@/app/hooks/useConversations"
@@ -240,6 +241,7 @@ export function ChatView({
             Upload PDF
           </Button>
           <p className="text-xs text-muted-foreground">.pdf files only</p>
+          <AiMistakesNotice className="text-xs text-muted-foreground" />
         </div>
       </div>
     )
@@ -280,26 +282,29 @@ export function ChatView({
         )}
 
         <div className="mt-auto border-t border-border pt-4 shrink-0">
-          <form onSubmit={handleSubmit} className="mx-auto flex max-w-3xl gap-2">
-            <Input
-              value={input}
-              onChange={handleInputChange}
-              disabled={isLoading || conversation?.status !== "ready"}
-              placeholder="Ask a question…"
-              aria-label="Ask a question about your document"
-              autoComplete="off"
-              className="flex-1"
-              name="prompt"
-            />
-            <Button
-              type="submit"
-              disabled={isLoading || conversation?.status !== "ready" || !input.trim()}
-              size="icon"
-              aria-label="Send message"
-            >
-              <SendIcon />
-            </Button>
-          </form>
+          <div className="mx-auto flex max-w-3xl flex-col gap-2">
+            <form onSubmit={handleSubmit} className="flex gap-2">
+              <Input
+                value={input}
+                onChange={handleInputChange}
+                disabled={isLoading || conversation?.status !== "ready"}
+                placeholder="Ask a question…"
+                aria-label="Ask a question about your document"
+                autoComplete="off"
+                className="flex-1"
+                name="prompt"
+              />
+              <Button
+                type="submit"
+                disabled={isLoading || conversation?.status !== "ready" || !input.trim()}
+                size="icon"
+                aria-label="Send message"
+              >
+                <SendIcon />
+              </Button>
+            </form>
+            <AiMistakesNotice />
+          </div>
         </div>
       </div>
     </div>
